@@ -12,6 +12,7 @@ export interface BibleVerse {
   lesson: string
   reference: string
   text: string
+  image?: { url: string; title: string; artist: string }
 }
 
 const verses: BibleVerse[] = versesData as BibleVerse[]

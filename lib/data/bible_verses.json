@@ -3,150 +3,175 @@
     "id": 1,
     "lesson": "门徒造就",
     "reference": "马太福音 28:18-20",
-    "text": "耶稣进前来，对他们说：天上地下所有的权柄都赐给我了。所以，你们要去，使万民作我的门徒，奉父、子、圣灵的名给他们施洗。凡我所吩咐你们的，都教训他们遵守，我就常与你们同在，直到世界的末了。"
+    "text": "耶稣进前来，对他们说：天上地下所有的权柄都赐给我了。所以，你们要去，使万民作我的门徒，奉父、子、圣灵的名给他们施洗。凡我所吩咐你们的，都教训他们遵守，我就常与你们同在，直到世界的末了。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Raphael_-_Feed_my_Sheep.jpg", "title": "基督托付彼得", "artist": "拉斐尔 · 约1515" }
   },
   {
     "id": 2,
     "lesson": "成为门徒",
     "reference": "路加福音 9:23-24",
-    "text": "耶稣又对众人说：若有人要跟从我，就当舍己，天天背起他的十字架来跟从我。因为凡要救自己生命的，必丧掉生命；凡为我丧掉生命的，必救了生命。"
+    "text": "耶稣又对众人说：若有人要跟从我，就当舍己，天天背起他的十字架来跟从我。因为凡要救自己生命的，必丧掉生命；凡为我丧掉生命的，必救了生命。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/8/8f/El_Greco_-_Christ_Carrying_the_Cross_-_WGA10459.jpg", "title": "背负十字架的基督", "artist": "格列柯 · 约1580" }
   },
   {
     "id": 3,
     "lesson": "灵修时间",
     "reference": "诗篇 1:1-3",
-    "text": "不从恶人的计谋，不站罪人的道路，不坐亵慢人的座位，惟喜爱耶和华的律法，昼夜思想，这人便为有福。他要像一棵树栽在溪水旁，按时候结果子，叶子也不枯干。凡他所做的尽都顺利。"
+    "text": "不从恶人的计谋，不站罪人的道路，不坐亵慢人的座位，惟喜爱耶和华的律法，昼夜思想，这人便为有福。他要像一棵树栽在溪水旁，按时候结果子，叶子也不枯干。凡他所做的尽都顺利。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/8/80/Bloch-SermonOnTheMount.jpg", "title": "山上宝训", "artist": "卡尔·布洛赫 · 1877" }
   },
   {
     "id": 4,
     "lesson": "研读圣经",
     "reference": "提摩太后书 3:16-17",
-    "text": "圣经都是神所默示的，于教训、督责、使人归正、教导人学义都是有益的，叫属神的人得以完全，预备行各样的善事。"
+    "text": "圣经都是神所默示的，于教训、督责、使人归正、教导人学义都是有益的，叫属神的人得以完全，预备行各样的善事。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/4/42/Saint_Jerome_Writing-Caravaggio_%281605-6%29.jpg", "title": "书写中的圣哲罗姆", "artist": "卡拉瓦乔 · 1605" }
   },
   {
     "id": 5,
     "lesson": "祷告",
     "reference": "马太福音 6:9-13",
-    "text": "所以，你们祷告要这样说：我们在天上的父：愿人都尊你的名为圣。愿你的国降临；愿你的旨意行在地上，如同行在天上。我们日用的饮食，今日赐给我们。免我们的债，如同我们免了人的债。不叫我们遇见试探；救我们脱离凶恶。因为国度、权柄、荣耀，全是你的，直到永远。阿们！"
+    "text": "所以，你们祷告要这样说：我们在天上的父：愿人都尊你的名为圣。愿你的国降临；愿你的旨意行在地上，如同行在天上。我们日用的饮食，今日赐给我们。免我们的债，如同我们免了人的债。不叫我们遇见试探；救我们脱离凶恶。因为国度、权柄、荣耀，全是你的，直到永远。阿们！",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/1/13/Carl_Heinrich_Bloch_-_In_a_Roman_Osteria.jpg", "title": "客西马尼园的祷告", "artist": "卡尔·布洛赫 · 1873" }
   },
   {
     "id": 6,
     "lesson": "敬拜",
     "reference": "启示录 4:11",
-    "text": "我们的主，我们的神，你是配得荣耀、尊贵、权柄的；因为你创造了万物，并且万物是因你的旨意被创造而有的。"
+    "text": "我们的主，我们的神，你是配得荣耀、尊贵、权柄的；因为你创造了万物，并且万物是因你的旨意被创造而有的。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Botticelli_-_Adoration_of_the_Magi_%28Zanobi_Altar%29_-_Uffizi.jpg", "title": "东方博士来拜", "artist": "波提切利 · 约1475" }
   },
   {
     "id": 7,
     "lesson": "三位一体的神",
     "reference": "申命记 6:4；哥林多后书 13:14",
-    "text": "以色列啊，你要听！耶和华——我们神是独一的主。\n愿主耶稣基督的恩惠、神的慈爱、圣灵的感动，常与你们众人同在！"
+    "text": "以色列啊，你要听！耶和华——我们神是独一的主。\n愿主耶稣基督的恩惠、神的慈爱、圣灵的感动，常与你们众人同在！",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/0/01/Angelsatmamre-trinity-rublev-1410.jpg", "title": "三一圣像", "artist": "卢布廖夫 · 约1410" }
   },
   {
     "id": 8,
     "lesson": "照着神的形像被造",
     "reference": "创世记 1:26-27",
-    "text": "神说：我们要照着我们的形像、按着我们的样式造人，使他们管理海里的鱼、空中的鸟、地上的牲畜，和全地，并地上所爬的一切昆虫。神就照着自己的形像造人，乃是照着他的形像造男造女。"
+    "text": "神说：我们要照着我们的形像、按着我们的样式造人，使他们管理海里的鱼、空中的鸟、地上的牲畜，和全地，并地上所爬的一切昆虫。神就照着自己的形像造人，乃是照着他的形像造男造女。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg", "title": "创造亚当", "artist": "米开朗基罗 · 1512" }
   },
   {
     "id": 9,
     "lesson": "罪",
     "reference": "罗马书 3:23；罗马书 6:23",
-    "text": "因为世人都犯了罪，亏缺了神的荣耀。\n因为罪的工价乃是死；惟有神的恩赐，在我们的主基督耶稣里，乃是永生。"
+    "text": "因为世人都犯了罪，亏缺了神的荣耀。\n因为罪的工价乃是死；惟有神的恩赐，在我们的主基督耶稣里，乃是永生。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Masaccio%2C_expulsion_from_the_garden_of_eden%2C_1425_–_1427_–_restore.jpg", "title": "逐出乐园", "artist": "马萨乔 · 1425" }
   },
   {
     "id": 10,
     "lesson": "恩典",
     "reference": "罗马书 5:8",
-    "text": "惟有基督在我们还作罪人的时候为我们死，神的爱就在此向我们显明了。"
+    "text": "惟有基督在我们还作罪人的时候为我们死，神的爱就在此向我们显明了。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Rembrandt_van_Rijn_-_Return_of_the_Prodigal_Son_-_Google_Art_Project.jpg", "title": "浪子回头", "artist": "伦勃朗 · 约1668" }
   },
   {
     "id": 11,
     "lesson": "救赎",
     "reference": "以赛亚书 53:4-6",
-    "text": "他诚然担当我们的忧患，背负我们的痛苦；我们却以为他受责罚，被神击打苦待了。哪知他为我们的过犯受害，为我们的罪孽压伤。因他受的刑罚，我们得平安；因他受的鞭伤，我们得医治。我们都如羊走迷；各人偏行己路；耶和华使我们众人的罪孽都归在他身上。"
+    "text": "他诚然担当我们的忧患，背负我们的痛苦；我们却以为他受责罚，被神击打苦待了。哪知他为我们的过犯受害，为我们的罪孽压伤。因他受的刑罚，我们得平安；因他受的鞭伤，我们得医治。我们都如羊走迷；各人偏行己路；耶和华使我们众人的罪孽都归在他身上。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Gr%C3%BCnewald_Isenheim2.jpg", "title": "伊森海姆祭坛画·钉十字架", "artist": "格吕内瓦尔德 · 约1515" }
   },
   {
     "id": 12,
     "lesson": "称义",
     "reference": "以弗所书 2:8-10",
-    "text": "你们得救是本乎恩，也因着信；这并不是出于自己，乃是神所赐的；也不是出于行为，免得有人自夸。我们原是他的工作，在基督耶稣里造成的，为要叫我们行善，就是神在先前所预备叫我们行的。"
+    "text": "你们得救是本乎恩，也因着信；这并不是出于自己，乃是神所赐的；也不是出于行为，免得有人自夸。我们原是他的工作，在基督耶稣里造成的，为要叫我们行善，就是神在先前所预备叫我们行的。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Fra_Angelico_-_Resurrection_of_Christ_and_Women_at_the_Tomb.jpg", "title": "基督复活", "artist": "弗拉·安杰利科 · 1440" }
   },
   {
     "id": 13,
     "lesson": "儿女的名分",
     "reference": "罗马书 8:15-16",
-    "text": "你们所受的，不是奴仆的心，仍旧害怕；所受的，乃是儿子的心，因此我们呼叫：阿爸！父！圣灵与我们的心同证我们是神的儿女。"
+    "text": "你们所受的，不是奴仆的心，仍旧害怕；所受的，乃是儿子的心，因此我们呼叫：阿爸！父！圣灵与我们的心同证我们是神的儿女。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Carl_Bloch_-_Come_Unto_Me.jpg", "title": "来就我", "artist": "卡尔·布洛赫 · 1880" }
   },
   {
     "id": 14,
     "lesson": "被圣灵充满",
     "reference": "以弗所书 5:18-20",
-    "text": "不要醉酒，酒能使人放荡；乃要被圣灵充满。当用诗章、颂词、灵歌、彼此对说，口唱心和地赞美主。凡事要奉我们主耶稣基督的名常常感谢父神。"
+    "text": "不要醉酒，酒能使人放荡；乃要被圣灵充满。当用诗章、颂词、灵歌、彼此对说，口唱心和地赞美主。凡事要奉我们主耶稣基督的名常常感谢父神。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/El_Greco_-_Pentecost_-_Google_Art_Project.jpg", "title": "五旬节降临", "artist": "格列柯 · 约1600" }
   },
   {
     "id": 15,
     "lesson": "圣灵的果子",
     "reference": "加拉太书 5:22-23",
-    "text": "圣灵所结的果子，就是仁爱、喜乐、和平、忍耐、恩慈、良善、信实、温柔、节制。这样的事没有律法禁止。"
+    "text": "圣灵所结的果子，就是仁爱、喜乐、和平、忍耐、恩慈、良善、信实、温柔、节制。这样的事没有律法禁止。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Jacopo_Bassano_-_The_Parable_of_the_Sower.jpg", "title": "撒种的比喻", "artist": "雅各布·巴萨诺 · 约1560" }
   },
   {
     "id": 16,
     "lesson": "信靠",
     "reference": "箴言 3:5-6",
-    "text": "你要专心仰赖耶和华，不可倚靠自己的聪明，在你一切所行的事上都要认定他，他必指引你的路。"
+    "text": "你要专心仰赖耶和华，不可倚靠自己的聪明，在你一切所行的事上都要认定他，他必指引你的路。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/a/a5/The_Good_Shepherd_-_Carl_Bloch.jpg", "title": "好牧人", "artist": "卡尔·布洛赫 · 1874" }
   },
   {
     "id": 17,
     "lesson": "爱",
     "reference": "约翰福音 13:34-35",
-    "text": "我赐给你们一条新命令，乃是叫你们彼此相爱；我怎样爱你们，你们也要怎样相爱。你们若有彼此相爱的心，众人因此就认出你们是我的门徒了。"
+    "text": "我赐给你们一条新命令，乃是叫你们彼此相爱；我怎样爱你们，你们也要怎样相爱。你们若有彼此相爱的心，众人因此就认出你们是我的门徒了。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/4/48/The_Last_Supper_-_Leonardo_Da_Vinci_-_High_Resolution_32x16.jpg", "title": "最后的晚餐", "artist": "达·芬奇 · 1498" }
   },
   {
     "id": 18,
     "lesson": "公义",
     "reference": "以赛亚书 58:6-7",
-    "text": "我所拣选的禁食不是要松开凶恶的绳，解下轭上的索，使被欺压的得自由，折断一切的轭吗？不是要把你的饼分给饥饿的人，将飘流的穷人接到你家中，见赤身的给他衣服遮体，顾恤自己的骨肉而不掩藏吗？"
+    "text": "我所拣选的禁食不是要松开凶恶的绳，解下轭上的索，使被欺压的得自由，折断一切的轭吗？不是要把你的饼分给饥饿的人，将飘流的穷人接到你家中，见赤身的给他衣服遮体，顾恤自己的骨肉而不掩藏吗？",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Michelangelo_Caravaggio_-_The_Seven_Acts_of_Mercy.jpg", "title": "仁爱七事", "artist": "卡拉瓦乔 · 1607" }
   },
   {
     "id": 19,
     "lesson": "见证人",
     "reference": "使徒行传 1:8",
-    "text": "但圣灵降临在你们身上，你们就必得着能力，并要在耶路撒冷、犹太全地，和撒玛利亚，直到地极，作我的见证。"
+    "text": "但圣灵降临在你们身上，你们就必得着能力，并要在耶路撒冷、犹太全地，和撒玛利亚，直到地极，作我的见证。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/4/46/Ascension_of_Christ_by_Garofalo.jpg", "title": "基督升天", "artist": "加罗法洛 · 约1520" }
   },
   {
     "id": 20,
     "lesson": "教会",
     "reference": "哥林多前书 12:12-13",
-    "text": "就如身子是一个，却有许多肢体；而且肢体虽多，仍是一个身子；基督也是这样。我们不拘是犹太人，是希利尼人，是为奴的，是自主的，都从一位圣灵受洗，成了一个身体，饮于一位圣灵。"
+    "text": "就如身子是一个，却有许多肢体；而且肢体虽多，仍是一个身子；基督也是这样。我们不拘是犹太人，是希利尼人，是为奴的，是自主的，都从一位圣灵受洗，成了一个身体，饮于一位圣灵。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Raphael_-_Feed_my_Sheep.jpg", "title": "基督托付彼得", "artist": "拉斐尔 · 约1515" }
   },
   {
     "id": 21,
     "lesson": "属灵恩赐",
     "reference": "哥林多前书 12:7",
-    "text": "圣灵显在各人身上，是叫人得益处。"
+    "text": "圣灵显在各人身上，是叫人得益处。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/El_Greco_-_Pentecost_-_Google_Art_Project.jpg", "title": "五旬节降临", "artist": "格列柯 · 约1600" }
   },
   {
     "id": 22,
     "lesson": "属灵争战",
     "reference": "以弗所书 6:14-18",
-    "text": "所以要站稳了，用真理当作带子束腰，用公义当作护心镜遮胸，又用平安的福音当作预备走路的鞋穿在脚上。此外，又拿着信德当作盾牌，可以灭尽那恶者一切的火箭；并戴上救恩的头盔，拿着圣灵的宝剑，就是神的道；靠着圣灵，随时多方祷告祈求；并要在此儆醒不倦，为众圣徒祈求。"
+    "text": "所以要站稳了，用真理当作带子束腰，用公义当作护心镜遮胸，又用平安的福音当作预备走路的鞋穿在脚上。此外，又拿着信德当作盾牌，可以灭尽那恶者一切的火箭；并戴上救恩的头盔，拿着圣灵的宝剑，就是神的道；靠着圣灵，随时多方祷告祈求；并要在此儆醒不倦，为众圣徒祈求。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Raphael-Saint_George_and_the_Dragon.jpg", "title": "圣乔治屠龙", "artist": "拉斐尔 · 约1506" }
   },
   {
     "id": 23,
     "lesson": "与神同行",
     "reference": "以弗所书 4:22-24",
-    "text": "就要脱去你们从前行为上的旧人，这旧人是因私欲的迷惑渐渐变坏的；又要将你们的心志改换一新，并且穿上新人；这新人是照着神的形像造的，有真理的仁义和圣洁。"
+    "text": "就要脱去你们从前行为上的旧人，这旧人是因私欲的迷惑渐渐变坏的；又要将你们的心志改换一新，并且穿上新人；这新人是照着神的形像造的，有真理的仁义和圣洁。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/5/58/Transfiguration_Raphael.jpg", "title": "基督变容", "artist": "拉斐尔 · 1520" }
   },
   {
     "id": 24,
     "lesson": "传承信仰",
     "reference": "提摩太后书 2:2",
-    "text": "你在许多见证人面前听见我所教训的，也要交托那忠心能教导别人的人。"
+    "text": "你在许多见证人面前听见我所教训的，也要交托那忠心能教导别人的人。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/4/46/Entrega_de_las_llaves_a_San_Pedro_%28Perugino%29.jpg", "title": "赐予彼得天国钥匙", "artist": "佩鲁吉诺 · 1481" }
   },
   {
     "id": 25,
     "lesson": "金钱",
     "reference": "马太福音 6:24",
-    "text": "一个人不能事奉两个主；不是恶这个，爱那个，就是重这个，轻那个。你们不能又事奉神，又事奉玛门。"
+    "text": "一个人不能事奉两个主；不是恶这个，爱那个，就是重这个，轻那个。你们不能又事奉神，又事奉玛门。",
+    "image": { "url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/El_Greco_-_Christ_Driving_the_Money_Changers_from_the_Temple.jpg", "title": "洁净圣殿", "artist": "格列柯 · 约1600" }
   }
 ]
