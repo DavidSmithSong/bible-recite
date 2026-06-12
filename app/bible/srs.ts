@@ -1,3 +1,5 @@
+import { getActiveUserId, scopedStorageKey } from './users'
+
 export interface CardState {
   interval: number
   easeFactor: number
@@ -24,14 +26,16 @@ function addDays(date: string, days: number): string {
 export function loadState(): Record<number, CardState> {
   if (typeof window === 'undefined') return {}
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
+    const scoped = localStorage.getItem(scopedStorageKey(STORAGE_KEY))
+    const legacy = getActiveUserId() === 'default' ? localStorage.getItem(STORAGE_KEY) : null
+    return JSON.parse(scoped ?? legacy ?? '{}')
   } catch {
     return {}
   }
 }
 
 export function saveState(state: Record<number, CardState>): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  localStorage.setItem(scopedStorageKey(STORAGE_KEY), JSON.stringify(state))
 }
 
 export function getCardState(id: number): CardState {
@@ -52,7 +56,7 @@ function defaultState(): CardState {
 
 // correct = system-determined (allCorrect from diff, or refCorrect)
 // rating  = user's self-assessment (affects interval only)
-export function applyRating(id: number, correct: boolean, rating: Rating): void {
+export function applyRating(id: number, correct: boolean, rating: Rating): CardState {
   const state = loadState()
   const card = state[id] ?? defaultState()
 
@@ -111,6 +115,7 @@ export function applyRating(id: number, correct: boolean, rating: Rating): void 
   }
 
   saveState(state)
+  return state[id]
 }
 
 export function getDueIds(allIds: number[]): number[] {

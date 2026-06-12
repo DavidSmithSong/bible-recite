@@ -63,6 +63,48 @@ export interface SentenceResult {
 export interface DiffResult {
   sentences: SentenceResult[]
   allCorrect: boolean
+  aligned: AlignedChar[]
+}
+
+export interface AlignedChar {
+  inputChar: string | null
+  originalChar: string | null
+  type: 'ok' | 'mismatch' | 'missing' | 'extra'
+}
+
+function alignDiff(diff: DiffChar[]): AlignedChar[] {
+  const aligned: AlignedChar[] = []
+  let index = 0
+
+  while (index < diff.length) {
+    const item = diff[index]
+    if (item.type === 'ok') {
+      aligned.push({ inputChar: item.char, originalChar: item.char, type: 'ok' })
+      index += 1
+      continue
+    }
+
+    const extras: string[] = []
+    const missings: string[] = []
+    while (index < diff.length && diff[index].type !== 'ok') {
+      if (diff[index].type === 'extra') extras.push(diff[index].char)
+      if (diff[index].type === 'missing') missings.push(diff[index].char)
+      index += 1
+    }
+
+    const length = Math.max(extras.length, missings.length)
+    for (let i = 0; i < length; i++) {
+      const inputChar = extras[i] ?? null
+      const originalChar = missings[i] ?? null
+      aligned.push({
+        inputChar,
+        originalChar,
+        type: inputChar && originalChar ? 'mismatch' : inputChar ? 'extra' : 'missing',
+      })
+    }
+  }
+
+  return aligned
 }
 
 export function compareText(userInput: string, originalText: string): DiffResult {
@@ -111,6 +153,7 @@ export function compareText(userInput: string, originalText: string): DiffResult
   return {
     sentences: sentenceResults,
     allCorrect: sentenceResults.every(s => s.isCorrect),
+    aligned: alignDiff(fullDiff),
   }
 }
 

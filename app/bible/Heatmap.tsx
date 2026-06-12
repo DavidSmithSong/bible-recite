@@ -69,15 +69,15 @@ export default function Heatmap() {
   return (
     <div className="space-y-8">
       {/* Heatmap */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-6">
-        <h2 className="text-sm font-medium text-stone-700 mb-4">练习记录</h2>
+      <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] p-6">
+        <h2 className="text-sm font-medium text-[var(--app-text)] mb-4">练习记录</h2>
 
         <div className="overflow-x-auto">
         {/* Month labels */}
         <div className="relative mb-1 ml-8" style={{ height: 16, minWidth: 52 * STEP + 32 }}>
           {monthLabels.map(({ col, label }) => (
             <span
-              key={label}
+              key={`${label}-${col}`}
               className="absolute text-xs text-stone-400"
               style={{ left: col * STEP + 32 }}
             >
@@ -90,7 +90,7 @@ export default function Heatmap() {
           {/* Weekday labels */}
           <div className="flex flex-col gap-[2px] justify-start mt-0" style={{ width: 24 }}>
             {['一', '', '三', '', '五', '', '日'].map((label, i) => (
-              <div key={i} className="text-xs text-stone-300 flex items-center" style={{ height: CELL }}>
+              <div key={i} className="text-xs text-[var(--subtle-text)] flex items-center" style={{ height: CELL }}>
                 {label}
               </div>
             ))}
@@ -136,11 +136,11 @@ export default function Heatmap() {
 
         {/* Legend */}
         <div className="flex items-center gap-1 mt-2 ml-8">
-          <span className="text-xs text-stone-300 mr-1">少</span>
+          <span className="text-xs text-[var(--subtle-text)] mr-1">少</span>
           {[0, 1, 3, 6].map(n => (
             <div key={n} className={`w-3 h-3 rounded-sm ${getColor(n)}`} />
           ))}
-          <span className="text-xs text-stone-300 ml-1">多</span>
+          <span className="text-xs text-[var(--subtle-text)] ml-1">多</span>
         </div>
       </div>
 
@@ -167,8 +167,8 @@ export default function Heatmap() {
 
 function StatCard({ label, value, unit, highlight = false }: { label: string; value: number; unit: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-4 text-center ${highlight ? 'bg-green-50 border-green-200' : 'bg-white border-stone-200'}`}>
-      <p className={`text-2xl font-semibold ${highlight ? 'text-green-700' : 'text-stone-900'}`}>
+    <div className={`rounded-2xl border p-4 text-center ${highlight ? 'bg-green-50 border-green-200' : 'bg-[var(--card-bg)] border-[var(--border)]'}`}>
+      <p className={`text-2xl font-semibold ${highlight ? 'text-green-700' : 'text-[var(--app-text)]'}`}>
         {value}<span className="text-sm font-normal ml-0.5">{unit}</span>
       </p>
       <p className="text-xs text-stone-400 mt-1">{label}</p>
