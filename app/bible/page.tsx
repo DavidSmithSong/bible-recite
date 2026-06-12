@@ -6,6 +6,8 @@ import StudyCard from './StudyCard'
 import Heatmap from './Heatmap'
 import { getDueIds, getCardState, type Rating } from './srs'
 import { getVerseHistory } from './history'
+import { LESSON_PAINTINGS } from '@/lib/data/paintings'
+import { getWeekLessonId, getScheduleEntry } from '@/lib/data/schedule'
 
 export interface BibleVerse {
   id: number
@@ -16,25 +18,16 @@ export interface BibleVerse {
 
 const verses: BibleVerse[] = versesData as BibleVerse[]
 type StudyMode = 'recite' | 'reference'
-type Tab = 'due' | 'all' | 'stats'
+type Tab = 'week' | 'all' | 'stats'
 
 export default function BiblePage() {
-  const [tab, setTab] = useState<Tab>('due')
+  const [tab, setTab] = useState<Tab>('week')
   const [dueIds, setDueIds] = useState<number[]>([])
   const [selectedVerse, setSelectedVerse] = useState<BibleVerse | null>(null)
   const [studyMode, setStudyMode] = useState<StudyMode>('recite')
-  const [completedThisSession, setCompletedThisSession] = useState<number[]>([])
 
   useEffect(() => {
     refreshDue()
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      const checkedToday = localStorage.getItem('bible_notif_checked')
-      const today = new Date().toISOString().slice(0, 10)
-      if (checkedToday !== today) {
-        Notification.requestPermission()
-        localStorage.setItem('bible_notif_checked', today)
-      }
-    }
   }, [])
 
   function refreshDue() {
@@ -42,9 +35,6 @@ export default function BiblePage() {
   }
 
   function handleComplete(_correct: boolean, _rating: Rating) {
-    if (selectedVerse) {
-      setCompletedThisSession(prev => [...prev, selectedVerse.id])
-    }
     refreshDue()
     setSelectedVerse(null)
   }
@@ -68,17 +58,17 @@ export default function BiblePage() {
     )
   }
 
-  const dueVerses = verses.filter(v => dueIds.includes(v.id))
-  const todayDone = dueIds.length === 0 && completedThisSession.length > 0
+  const weekLessonId = getWeekLessonId()
+  const weekEntry = getScheduleEntry(weekLessonId)
+  const weekVerse = verses.find(v => v.id === weekLessonId) ?? null
 
   return (
     <main className="px-4 py-10 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-1">背经练习</h1>
-      <p className="text-stone-400 text-sm mb-6">圣经和合本 · 艾宾浩斯间隔复习</p>
+      <h1 className="text-2xl font-semibold mb-6">背经练习</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-stone-200">
-        {([['due', '今日复习'], ['all', '全部经文'], ['stats', '统计']] as [Tab, string][]).map(([t, label]) => (
+        {([['week', '本周经文'], ['all', '全部经文'], ['stats', '统计']] as [Tab, string][]).map(([t, label]) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -87,41 +77,23 @@ export default function BiblePage() {
             }`}
           >
             {label}
-            {t === 'due' && dueIds.length > 0 && (
-              <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
-                {dueIds.length}
-              </span>
-            )}
             {tab === t && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-stone-900 rounded-t" />}
           </button>
         ))}
       </div>
 
-      {/* Today's due */}
-      {tab === 'due' && (
+      {/* 本周经文 */}
+      {tab === 'week' && (
         <div>
-          {dueVerses.length === 0 ? (
-            <div className="text-center py-16 text-stone-400">
-              {todayDone ? (
-                <>
-                  <p className="text-2xl mb-2">🎉</p>
-                  <p className="font-medium text-stone-600">今日复习完成！</p>
-                  <p className="text-sm mt-1">明天再来继续吧</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl mb-2">✅</p>
-                  <p className="font-medium text-stone-600">今日无需复习</p>
-                  <p className="text-sm mt-1">可前往「全部经文」开始新的背诵</p>
-                </>
-              )}
-            </div>
+          {weekEntry && (
+            <p className="text-xs text-stone-400 mb-3">
+              第 {weekLessonId} 课 · 上课日期 {weekEntry.date}
+            </p>
+          )}
+          {weekVerse ? (
+            <VerseRow verse={weekVerse} onStudy={startStudy} isDue={dueIds.includes(weekVerse.id)} />
           ) : (
-            <div className="space-y-3">
-              {dueVerses.map(verse => (
-                <VerseRow key={verse.id} verse={verse} onStudy={startStudy} isDue />
-              ))}
-            </div>
+            <p className="text-stone-400 text-sm py-12 text-center">课程尚未开始</p>
           )}
         </div>
       )}
@@ -166,12 +138,25 @@ function VerseRow({
   isDue: boolean
 }) {
   const state = typeof window !== 'undefined' ? getCardState(verse.id) : null
+  const painting = LESSON_PAINTINGS[verse.id]
 
   return (
     <div className="bg-white rounded-xl border border-stone-200 p-4 flex items-center gap-4 hover:border-stone-300 transition-colors">
+      {/* Painting thumbnail */}
+      {painting && (
+        <div className="shrink-0 w-16 h-16 rounded-md overflow-hidden bg-stone-100">
+          <img
+            src={painting.url}
+            alt={painting.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      )}
+
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-stone-400 shrink-0">第 {verse.id} 课</span>
+          <span className="text-sm font-medium text-stone-500 shrink-0">第 {verse.id} 课</span>
           {isDue && (
             <span className="text-xs bg-red-100 text-red-600 rounded-full px-2 py-0.5 shrink-0">待复习</span>
           )}

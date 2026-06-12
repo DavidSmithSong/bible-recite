@@ -5,6 +5,7 @@ import { compareText, compareReference } from './diff'
 import { applyRating, getCardState, type Rating } from './srs'
 import { addEntry, todayKey } from './history'
 import type { BibleVerse } from './page'
+import { LESSON_PAINTINGS } from '@/lib/data/paintings'
 
 type Mode = 'recite' | 'reference'
 type FeedbackMode = 'highlight' | 'answer'
@@ -108,45 +109,63 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
 
   // ── IDLE ──────────────────────────────────────────────────────────────────
   if (stage === 'idle') {
+    const painting = LESSON_PAINTINGS[verse.id]
     return (
       <div className="max-w-xl mx-auto">
         <button onClick={onBack} className="text-stone-400 hover:text-stone-600 text-sm mb-6 flex items-center gap-1">
           ← 返回列表
         </button>
-        <div className="bg-white rounded-2xl border border-stone-200 p-8 shadow-sm">
-          <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">第 {verse.id} 课</p>
-          <h2 className="text-2xl font-semibold text-stone-900 mb-1">{verse.lesson}</h2>
-
-          {/* Consecutive progress */}
-          <div className="mb-4">
-            <ConsecutiveDots count={cardState.consecutiveCorrect} passed={cardState.passed} />
-          </div>
-
-          {mode === 'recite' ? (
-            <>
-              <p className="text-stone-500 text-sm mb-6">{verse.reference}</p>
-              <p className="text-xs text-stone-400 mb-6">默写出上方经文（标点可省略）</p>
-              <button
-                onClick={() => setStage('inputting')}
-                className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-stone-700 transition-colors"
-              >
-                开始默写
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="my-6 text-stone-700 leading-loose text-sm whitespace-pre-line border-l-2 border-stone-200 pl-4">
-                {verse.text}
+        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+          {/* Painting */}
+          {painting && (
+            <div className="relative w-full h-56 bg-stone-100">
+              <img
+                src={painting.url.replace('/250px-', '/960px-')}
+                alt={painting.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-2 right-3 text-right">
+                <p className="text-white/60 text-xs drop-shadow">{painting.title}</p>
+                <p className="text-white/60 text-xs drop-shadow">{painting.artistZh} · {painting.year}</p>
               </div>
-              <p className="text-xs text-stone-400 mb-4">写出这段经文的出处（书卷 章:节）</p>
-              <button
-                onClick={() => setStage('inputting')}
-                className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-stone-700 transition-colors"
-              >
-                输入出处
-              </button>
-            </>
+            </div>
           )}
+
+          <div className="p-8 text-center">
+            <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">第 {verse.id} 课</p>
+            <h2 className="text-2xl font-semibold text-stone-900 mb-3">{verse.lesson}</h2>
+
+            {/* Consecutive progress */}
+            <div className="mb-5 flex justify-center">
+              <ConsecutiveDots count={cardState.consecutiveCorrect} passed={cardState.passed} />
+            </div>
+
+            {mode === 'recite' ? (
+              <>
+                <p className="text-stone-500 text-sm mb-3">{verse.reference}</p>
+                <p className="text-xs text-stone-400 mb-6">默写出上方经文（标点可省略）</p>
+                <button
+                  onClick={() => setStage('inputting')}
+                  className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-stone-700 transition-colors"
+                >
+                  开始默写
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="my-5 text-stone-700 leading-loose text-sm whitespace-pre-line border-l-2 border-stone-200 pl-4 text-left">
+                  {verse.text}
+                </div>
+                <p className="text-xs text-stone-400 mb-4">写出这段经文的出处（书卷 章:节）</p>
+                <button
+                  onClick={() => setStage('inputting')}
+                  className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-stone-700 transition-colors"
+                >
+                  输入出处
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     )

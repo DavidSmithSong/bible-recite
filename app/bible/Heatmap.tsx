@@ -72,20 +72,21 @@ export default function Heatmap() {
       <div className="bg-white rounded-2xl border border-stone-200 p-6">
         <h2 className="text-sm font-medium text-stone-700 mb-4">练习记录</h2>
 
+        <div className="overflow-x-auto">
         {/* Month labels */}
-        <div className="relative mb-1 ml-8" style={{ height: 16 }}>
+        <div className="relative mb-1 ml-8" style={{ height: 16, minWidth: 52 * STEP + 32 }}>
           {monthLabels.map(({ col, label }) => (
             <span
               key={label}
               className="absolute text-xs text-stone-400"
-              style={{ left: col * STEP }}
+              style={{ left: col * STEP + 32 }}
             >
               {label}
             </span>
           ))}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2" style={{ minWidth: 52 * STEP + 32 }}>
           {/* Weekday labels */}
           <div className="flex flex-col gap-[2px] justify-start mt-0" style={{ width: 24 }}>
             {['一', '', '三', '', '五', '', '日'].map((label, i) => (
@@ -130,6 +131,8 @@ export default function Heatmap() {
             })}
           </div>
         </div>
+
+        </div>{/* end overflow-x-auto */}
 
         {/* Legend */}
         <div className="flex items-center gap-1 mt-2 ml-8">
