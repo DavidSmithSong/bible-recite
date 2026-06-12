@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+:root {
+  --app-bg: #f8f7f4;
+  --app-text: #1c1917;
+  --muted-text: #78716c;
+  --subtle-text: #a8a29e;
+  --card-bg: #ffffff;
+  --card-soft: #f5f5f4;
+  --border: #e7e5e4;
+  --button-bg: #1c1917;
+  --button-text: #ffffff;
+}
+
+:root.dark {
+  --app-bg: #000000;
+  --app-text: #f5f5f4;
+  --muted-text: #a8a29e;
+  --subtle-text: #78716c;
+  --card-bg: #0c0a09;
+  --card-soft: #1c1917;
+  --border: #292524;
+  --button-bg: #f5f5f4;
+  --button-text: #0c0a09;
+}
+
+body {
+  font-family: SimSun, "Songti SC", "Noto Serif CJK SC", serif;
+}
+
+.font-english {
+  font-family: "Times New Roman", Times, serif;
+}
+
+.font-verse {
+  font-family: KaiTi, STKaiti, "Kaiti SC", serif;
+}

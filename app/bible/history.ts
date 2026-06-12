@@ -1,3 +1,5 @@
+import { getActiveUserId, scopedStorageKey } from './users'
+
 export interface HistoryEntry {
   verseId: number
   date: string        // YYYY-MM-DD
@@ -12,7 +14,9 @@ const KEY = 'bible_history'
 export function loadHistory(): HistoryEntry[] {
   if (typeof window === 'undefined') return []
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]')
+    const scoped = localStorage.getItem(scopedStorageKey(KEY))
+    const legacy = getActiveUserId() === 'default' ? localStorage.getItem(KEY) : null
+    return JSON.parse(scoped ?? legacy ?? '[]')
   } catch {
     return []
   }
@@ -23,7 +27,7 @@ export function addEntry(entry: HistoryEntry): void {
   history.push(entry)
   // Keep max 2000 entries to avoid localStorage bloat
   const trimmed = history.length > 2000 ? history.slice(-2000) : history
-  localStorage.setItem(KEY, JSON.stringify(trimmed))
+  localStorage.setItem(scopedStorageKey(KEY), JSON.stringify(trimmed))
 }
 
 export function getVerseHistory(verseId: number): HistoryEntry[] {

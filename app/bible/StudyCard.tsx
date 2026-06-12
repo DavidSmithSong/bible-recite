@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { compareText, compareReference } from './diff'
+import { compareText, compareReference, type AlignedChar } from './diff'
 import { applyRating, getCardState, type Rating } from './srs'
 import { addEntry, todayKey } from './history'
 import type { BibleVerse } from './page'
 import { LESSON_PAINTINGS } from '@/lib/data/paintings'
 
 type Mode = 'recite' | 'reference'
-type FeedbackMode = 'highlight' | 'answer'
 type Stage = 'idle' | 'inputting' | 'reviewing'
 
 interface Props {
@@ -24,6 +23,43 @@ const RATING_LABELS: { rating: Rating; label: string; color: string }[] = [
   { rating: 3, label: '记住了', color: 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' },
   { rating: 4, label: '太简单', color: 'bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-200' },
 ]
+
+function AlignedReview({ aligned }: { aligned: AlignedChar[] }) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="mb-2 text-xs text-[var(--muted-text)]">你的默写</p>
+        <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] rounded-xl bg-[var(--app-bg)] p-4 text-2xl leading-9">
+          {aligned.map((item, index) => (
+            <span
+              key={`input-${index}`}
+              className={`inline-flex w-[1em] justify-center rounded px-0 ${
+                item.type === 'ok' ? 'text-[var(--app-text)]' : item.inputChar ? 'bg-red-100 text-red-700' : 'text-transparent'
+              }`}
+            >
+              {item.inputChar ?? '\u00A0'}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-2 text-xs text-[var(--muted-text)]">正确经文</p>
+        <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] rounded-xl bg-[var(--app-bg)] p-4 text-2xl leading-9">
+          {aligned.map((item, index) => (
+            <span
+              key={`original-${index}`}
+              className={`inline-flex w-[1em] justify-center rounded px-0 ${
+                item.type === 'ok' ? 'text-[var(--app-text)]' : item.originalChar ? 'bg-red-100 text-red-700' : 'text-transparent'
+              }`}
+            >
+              {item.originalChar ?? '\u00A0'}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function PaintingPanel({ verse, compact = false }: { verse: BibleVerse; compact?: boolean }) {
   const [imgFailed, setImgFailed] = useState(false)
@@ -65,8 +101,8 @@ function ConsecutiveDots({ count, passed }: { count: number; passed: boolean }) 
               i < count
                 ? passed && count >= 3
                   ? 'bg-green-500 border-green-500'
-                  : 'bg-stone-700 border-stone-700'
-                : 'bg-transparent border-stone-300'
+                  : 'bg-[var(--button-bg)] border-[var(--button-bg)]'
+                : 'bg-transparent border-[var(--border)]'
             }`}
           />
         ))}
@@ -80,7 +116,6 @@ function ConsecutiveDots({ count, passed }: { count: number; passed: boolean }) 
 export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
   const [stage, setStage] = useState<Stage>('idle')
   const [input, setInput] = useState('')
-  const [feedbackMode, setFeedbackMode] = useState<FeedbackMode>('highlight')
   const [diffResult, setDiffResult] = useState<ReturnType<typeof compareText> | null>(null)
   const [refCorrect, setRefCorrect] = useState<boolean | null>(null)
   const [isCorrect, setIsCorrect] = useState(false)
@@ -128,14 +163,14 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
   if (stage === 'idle') {
     const painting = LESSON_PAINTINGS[verse.id]
     return (
-      <div className="max-w-lg mx-auto">
-        <button onClick={onBack} className="text-stone-400 hover:text-stone-600 text-sm mb-4 flex items-center gap-1">
+      <div className="mx-auto max-w-4xl">
+        <button onClick={onBack} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
           ← 返回列表
         </button>
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+        <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/20 overflow-hidden">
           {/* Painting */}
           {painting && (
-            <div className="relative w-full h-56 bg-stone-100">
+            <div className="relative w-full h-96 bg-[var(--card-soft)]">
               <img
                 src={painting.url.replace('/250px-', '/960px-')}
                 alt={painting.title}
@@ -148,9 +183,9 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
             </div>
           )}
 
-          <div className="p-8 text-center">
+          <div className="p-10 text-center">
             <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">第 {verse.id} 课</p>
-            <h2 className="text-2xl font-semibold text-stone-900 mb-3">{verse.lesson}</h2>
+            <h2 className="text-3xl font-semibold text-[var(--app-text)] mb-4">{verse.lesson}</h2>
 
             {/* Consecutive progress */}
             <div className="mb-5 flex justify-center">
@@ -159,24 +194,27 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
 
             {mode === 'recite' ? (
               <>
-                <p className="text-stone-500 text-sm mb-3">{verse.reference}</p>
-                <p className="text-xs text-stone-400 mb-6">默写出上方经文（标点可省略）</p>
+                <p className="text-[var(--muted-text)] text-sm mb-3">{verse.reference}</p>
+                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] mx-auto mb-8 max-w-2xl whitespace-pre-line text-left text-lg leading-loose text-[var(--app-text)]">
+                  {verse.text}
+                </div>
+                <p className="text-xs text-[var(--muted-text)] mb-6">熟读原文后开始默写（标点可省略）</p>
                 <button
                   onClick={() => setStage('inputting')}
-                  className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-stone-700 transition-colors"
+                  className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
                 >
                   开始默写
                 </button>
               </>
             ) : (
               <>
-                <div className="my-5 text-stone-700 leading-loose text-sm whitespace-pre-line border-l-2 border-stone-200 pl-4 text-left">
+                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] my-5 text-[var(--app-text)] leading-loose text-sm whitespace-pre-line border-l-2 border-[var(--border)] pl-4 text-left">
                   {verse.text}
                 </div>
-                <p className="text-xs text-stone-400 mb-4">写出这段经文的出处（书卷 章:节）</p>
+                <p className="text-xs text-[var(--muted-text)] mb-4">写出这段经文的出处（书卷 章:节）</p>
                 <button
                   onClick={() => setStage('inputting')}
-                  className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-stone-700 transition-colors"
+                  className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
                 >
                   输入出处
                 </button>
@@ -191,13 +229,13 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
   // ── INPUTTING — 左图右输入 ───────────────────────────────────────────────
   if (stage === 'inputting') {
     return (
-      <div className="max-w-3xl mx-auto">
-        <button onClick={() => setStage('idle')} className="text-stone-400 hover:text-stone-600 text-sm mb-4 flex items-center gap-1">
+      <div className="mx-auto max-w-6xl">
+        <button onClick={() => setStage('idle')} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
           ← 返回
         </button>
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col sm:flex-row min-h-[480px]">
-          {/* Left — painting */}
-          <div className="sm:w-2/5 relative bg-stone-200 h-52 sm:h-auto flex-shrink-0">
+        <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/20 overflow-hidden">
+          {/* Painting */}
+          <div className="relative bg-[var(--card-soft)] h-[360px]">
             <PaintingImage verse={verse} />
             {/* Lesson label overlay */}
             <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/50 to-transparent px-4 py-3">
@@ -206,45 +244,31 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
             </div>
           </div>
 
-          {/* Right — input area */}
-          <div className="flex-1 flex flex-col p-6">
+          {/* Input area */}
+          <div className="flex min-h-[420px] flex-col p-8">
             {mode === 'recite' ? (
               <>
-                <p className="text-stone-700 font-medium text-sm mb-1">{verse.reference}</p>
-                <div className="flex gap-2 mb-4 text-xs">
-                  <span className="text-stone-400 self-center">核对方式：</span>
-                  <button
-                    onClick={() => setFeedbackMode('highlight')}
-                    className={`px-3 py-1 rounded-full border transition-colors ${feedbackMode === 'highlight' ? 'bg-stone-900 text-white border-stone-900' : 'border-stone-200 text-stone-500 hover:border-stone-400'}`}
-                  >
-                    标红错句
-                  </button>
-                  <button
-                    onClick={() => setFeedbackMode('answer')}
-                    className={`px-3 py-1 rounded-full border transition-colors ${feedbackMode === 'answer' ? 'bg-stone-900 text-white border-stone-900' : 'border-stone-200 text-stone-500 hover:border-stone-400'}`}
-                  >
-                    给出答案
-                  </button>
-                </div>
+                <p className="text-[var(--app-text)] font-medium text-base mb-3">{verse.reference}</p>
+                <p className="mb-4 text-xs text-[var(--muted-text)]">默写经文，提交后逐字对照</p>
                 <textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   placeholder="在此默写经文，标点可省略，遗漏一字算错…"
-                  className="flex-1 w-full border border-stone-200 rounded-xl p-4 text-sm leading-loose outline-none focus:border-stone-400 resize-none"
+                  className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] flex-1 w-full border border-[var(--border)] bg-[var(--app-bg)] text-[var(--app-text)] rounded-xl p-5 text-base leading-loose outline-none focus:border-[var(--muted-text)] resize-none placeholder:text-[var(--subtle-text)]"
                   autoFocus
                 />
               </>
             ) : (
               <>
-                <div className="flex-1 text-stone-600 text-sm leading-loose whitespace-pre-line border-l-2 border-stone-200 pl-4 mb-4 overflow-y-auto">
+                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] flex-1 text-[var(--app-text)] text-base leading-loose whitespace-pre-line border-l-2 border-[var(--border)] pl-4 mb-4 overflow-y-auto">
                   {verse.text}
                 </div>
-                <p className="text-xs text-stone-400 mb-2">写出这段经文的出处（书卷 章:节）</p>
+                <p className="text-xs text-[var(--muted-text)] mb-2">写出这段经文的出处（书卷 章:节）</p>
                 <input
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   placeholder="如：马太福音 28:18-20"
-                  className="w-full border border-stone-200 rounded-xl p-4 text-sm outline-none focus:border-stone-400"
+                  className="w-full border border-[var(--border)] bg-[var(--app-bg)] text-[var(--app-text)] rounded-xl p-4 text-sm outline-none focus:border-[var(--muted-text)] placeholder:text-[var(--subtle-text)]"
                   autoFocus
                 />
               </>
@@ -252,7 +276,7 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
             <button
               onClick={handleCheck}
               disabled={!input.trim()}
-              className="mt-4 w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-stone-700 disabled:opacity-40 transition-colors"
+              className="mt-5 w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold disabled:opacity-40 transition-colors hover:opacity-90"
             >
               提交
             </button>
@@ -264,13 +288,13 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
 
   // ── REVIEWING ─────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-3xl mx-auto">
-      <button onClick={resetCard} className="text-stone-400 hover:text-stone-600 text-sm mb-4 flex items-center gap-1">
+    <div className="mx-auto max-w-6xl">
+      <button onClick={resetCard} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
         ← 再练一次
       </button>
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col sm:flex-row min-h-[420px]">
-        {/* Left — painting (same as inputting) */}
-        <div className="sm:w-2/5 relative bg-stone-200 h-52 sm:h-auto flex-shrink-0">
+      <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/20 overflow-hidden">
+        {/* Painting */}
+        <div className="relative bg-[var(--card-soft)] h-[360px]">
           <PaintingImage verse={verse} />
           <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/50 to-transparent px-4 py-3">
             <p className="text-white/70 text-xs">第 {verse.id} 课</p>
@@ -278,8 +302,8 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
           </div>
         </div>
 
-        {/* Right — results */}
-        <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+        {/* Results */}
+        <div className="p-8 space-y-5">
           <ConsecutiveDots count={newConsecutive} passed={willBePassed} />
 
           {!cardState.passed && willBePassed && (
@@ -309,40 +333,13 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
                 <div className="p-4 rounded-xl bg-green-50 border border-green-200">
                   <p className="text-green-700 font-medium text-sm">✓ 全部正确！</p>
                 </div>
-              ) : feedbackMode === 'highlight' ? (
-                <div className="text-sm leading-loose">
-                  {diffResult.sentences.map((s, i) => (
-                    <span key={i} className={s.isCorrect ? 'text-stone-700' : 'bg-red-100 text-red-700 rounded px-0.5'}>
-                      {s.original}
-                    </span>
-                  ))}
-                </div>
               ) : (
-                <div className="text-sm leading-loose">
-                  <p className="text-xs text-stone-400 mb-2">
-                    <span className="text-green-600 font-bold">绿色</span> = 漏写 ·{' '}
-                    <span className="text-red-500 line-through">红色</span> = 多写
-                  </p>
-                  {diffResult.sentences.map((s, i) => (
-                    <span key={i}>
-                      {s.isCorrect ? (
-                        <span className="text-stone-700">{s.original}</span>
-                      ) : (
-                        s.annotated.map((a, j) => {
-                          if (a.type === 'ok' || a.type === 'punct') return <span key={j} className="text-stone-700">{a.char}</span>
-                          if (a.type === 'missing') return <span key={j} className="text-green-600 font-bold underline decoration-dotted">{a.char}</span>
-                          if (a.type === 'extra') return <span key={j} className="text-red-500 line-through">{a.char}</span>
-                          return null
-                        })
-                      )}
-                    </span>
-                  ))}
-                </div>
+                <AlignedReview aligned={diffResult.aligned} />
               )}
             </div>
           )}
 
-          <div>
+          <div className="pt-2">
             <p className="text-xs text-stone-400 mb-2">评分（影响下次复习间隔）</p>
             <div className="grid grid-cols-4 gap-2">
               {RATING_LABELS.map(({ rating, label, color }) => (
@@ -365,24 +362,33 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
 // Extracted to avoid useState reset on parent re-render
 function PaintingImage({ verse }: { verse: BibleVerse }) {
   const [failed, setFailed] = useState(false)
+  const painting = LESSON_PAINTINGS[verse.id]
+  const image = painting
+    ? {
+        url: painting.url.replace('/250px-', '/960px-'),
+        title: painting.title,
+        artist: `${painting.artistZh} · ${painting.year}`,
+      }
+    : verse.image
+
   return (
     <>
-      {!failed && verse.image?.url ? (
+      {!failed && image?.url ? (
         <img
-          src={verse.image.url}
-          alt={verse.image?.title ?? verse.lesson}
+          src={image.url}
+          alt={image.title ?? verse.lesson}
           onError={() => setFailed(true)}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain object-left"
         />
       ) : (
-        <div className="w-full h-full bg-gradient-to-br from-stone-300 to-stone-400 flex items-center justify-center">
-          <span className="text-stone-500 text-5xl">✦</span>
+        <div className="w-full h-full bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center">
+          <span className="text-stone-600 text-5xl">✦</span>
         </div>
       )}
-      {verse.image && (
+      {image && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
-          <p className="text-white/90 text-xs font-medium leading-tight">{verse.image.title}</p>
-          <p className="text-white/60 text-xs">{verse.image.artist}</p>
+          <p className="text-white/90 text-xs font-medium leading-tight">{image.title}</p>
+          <p className="text-white/60 text-xs">{image.artist}</p>
         </div>
       )}
     </>
