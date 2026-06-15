@@ -54,6 +54,10 @@ export default function BiblePage() {
   }, [])
 
   useEffect(() => {
+    refreshDue()
+  }, [activeUserId])
+
+  useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
     document.documentElement.style.colorScheme = theme
     const themeColor = theme === 'dark' ? '#000000' : '#f8f7f4'
@@ -290,6 +294,7 @@ function NameGate({
     </form>
   )
 }
+
 
 function HistoryDots({ verseId, hydrated }: { verseId: number; hydrated: boolean }) {
   if (!hydrated || typeof window === 'undefined') return null
