@@ -149,7 +149,11 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
   function handleRate(rating: Rating) {
     const state = applyRating(verse.id, isCorrect, rating)
     void saveCloudCardState(verse.id, state).catch(error => console.error(error))
-    onComplete(isCorrect, rating)
+    if (rating === 1) {
+      resetCard()
+    } else {
+      onComplete(isCorrect, rating)
+    }
   }
 
   function resetCard() {
