@@ -219,3 +219,91 @@ export async function importStudyState(
     })
   }
 }
+
+export interface AdminReportEntry {
+  profile: SupabaseProfile
+  totalCards: number
+  passedCards: number
+  totalHistory: number
+  correctHistory: number
+  lastHistoryTs: number | null
+  recentHistory: {
+    verseId: number
+    date: string
+    mode: 'recite' | 'reference'
+    correct: boolean
+    missedCount: number
+    ts: number
+  }[]
+}
+
+export async function getAdminReport(): Promise<AdminReportEntry[]> {
+  const [profiles, cardStates, history] = await Promise.all([
+    supabaseFetch<SupabaseProfile[]>('/profiles?select=*'),
+    supabaseFetch<{ profile_id: string; passed: boolean }[]>('/card_states?select=profile_id,passed'),
+    supabaseFetch<{
+      profile_id: string
+      verse_id: number
+      date: string
+      ts: string
+      mode: 'recite' | 'reference'
+      correct: boolean
+      missed_count: number
+    }[]>('/history_entries?select=profile_id,verse_id,date,ts,mode,correct,missed_count'),
+  ])
+
+  const reportMap: Record<string, AdminReportEntry> = {}
+  const historyListMap: Record<string, any[]> = {}
+  for (const p of profiles) {
+    reportMap[p.id] = {
+      profile: p,
+      totalCards: 0,
+      passedCards: 0,
+      totalHistory: 0,
+      correctHistory: 0,
+      lastHistoryTs: null,
+      recentHistory: [],
+    }
+    historyListMap[p.id] = []
+  }
+
+  for (const cs of cardStates) {
+    const entry = reportMap[cs.profile_id]
+    if (entry) {
+      entry.totalCards++
+      if (cs.passed) entry.passedCards++
+    }
+  }
+
+  for (const h of history) {
+    const entry = reportMap[h.profile_id]
+    if (entry) {
+      entry.totalHistory++
+      if (h.correct) entry.correctHistory++
+      const ts = Date.parse(h.ts)
+      if (!entry.lastHistoryTs || ts > entry.lastHistoryTs) {
+        entry.lastHistoryTs = ts
+      }
+      historyListMap[h.profile_id].push({
+        verseId: h.verse_id,
+        date: h.date,
+        mode: h.mode,
+        correct: h.correct,
+        missedCount: h.missed_count,
+        ts,
+      })
+    }
+  }
+
+  for (const p of profiles) {
+    const list = historyListMap[p.id]
+    list.sort((a, b) => b.ts - a.ts)
+    reportMap[p.id].recentHistory = list.slice(0, 10)
+  }
+
+  return Object.values(reportMap).sort((a, b) => {
+    const aTime = Date.parse(a.profile.last_seen_at)
+    const bTime = Date.parse(b.profile.last_seen_at)
+    return bTime - aTime
+  })
+}
