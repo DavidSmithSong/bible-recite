@@ -199,8 +199,12 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
             {mode === 'recite' ? (
               <>
                 <p className="text-[var(--muted-text)] text-sm mb-3">{verse.reference}</p>
-                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] mx-auto mb-8 max-w-2xl whitespace-pre-line text-left text-lg leading-loose text-[var(--app-text)]">
-                  {verse.text}
+                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] mx-auto mb-8 max-w-2xl text-left text-lg leading-loose text-[var(--app-text)] space-y-2">
+                  {verse.text.split('\n').map((line, i) => (
+                    <p key={i} className="indent-[2em]">
+                      {line}
+                    </p>
+                  ))}
                 </div>
                 <p className="text-xs text-[var(--muted-text)] mb-6">熟读原文后开始默写（标点可省略）</p>
                 <button
@@ -212,8 +216,12 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
               </>
             ) : (
               <>
-                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] my-5 text-[var(--app-text)] leading-loose text-sm whitespace-pre-line border-l-2 border-[var(--border)] pl-4 text-left">
-                  {verse.text}
+                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] my-5 text-[var(--app-text)] leading-loose text-sm border-l-2 border-[var(--border)] pl-4 text-left space-y-2">
+                  {verse.text.split('\n').map((line, i) => (
+                    <p key={i} className="indent-[2em]">
+                      {line}
+                    </p>
+                  ))}
                 </div>
                 <p className="text-xs text-[var(--muted-text)] mb-4">写出这段经文的出处（书卷 章:节）</p>
                 <button
@@ -264,8 +272,12 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
               </>
             ) : (
               <>
-                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] flex-1 text-[var(--app-text)] text-base leading-loose whitespace-pre-line border-l-2 border-[var(--border)] pl-4 mb-4 overflow-y-auto">
-                  {verse.text}
+                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] flex-1 text-[var(--app-text)] text-base leading-loose border-l-2 border-[var(--border)] pl-4 mb-4 overflow-y-auto space-y-2">
+                  {verse.text.split('\n').map((line, i) => (
+                    <p key={i} className="indent-[2em]">
+                      {line}
+                    </p>
+                  ))}
                 </div>
                 <p className="text-xs text-[var(--muted-text)] mb-2">写出这段经文的出处（书卷 章:节）</p>
                 <input
