@@ -382,7 +382,7 @@ function PaintingImage({ verse }: { verse: BibleVerse }) {
           src={image.url}
           alt={image.title ?? verse.lesson}
           onError={() => setFailed(true)}
-          className="w-full h-full object-contain object-left"
+          className="w-full h-full object-cover"
         />
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center">
