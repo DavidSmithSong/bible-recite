@@ -45,25 +45,18 @@ export function getWeekLessonId(): number {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // 本周周一
-  const dow = today.getDay() // 0=Sun
-  const monday = new Date(today)
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1))
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-
-  // 本周内有课？
-  for (const entry of SCHEDULE) {
+  // 寻找今天及以后首个上课的大纲条目
+  const upcoming = SCHEDULE.find(entry => {
     const d = new Date(entry.date)
-    if (d >= monday && d <= sunday) return entry.lessonId
+    return d >= today
+  })
+
+  if (upcoming) {
+    return upcoming.lessonId
   }
 
-  // 最近已过的课
-  const past = SCHEDULE.filter(e => new Date(e.date) <= today)
-  if (past.length > 0) return past[past.length - 1].lessonId
-
-  // 课程未开始
-  return SCHEDULE[0].lessonId
+  // 若所有课程均已结束，则返回最后一节课
+  return SCHEDULE[SCHEDULE.length - 1].lessonId
 }
 
 /** 返回指定课次对应的大纲条目 */
