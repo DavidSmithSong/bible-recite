@@ -1,4 +1,5 @@
 import { getActiveUserId, scopedStorageKey } from './users'
+import { SCHEDULE } from '@/lib/data/schedule'
 
 export interface CardState {
   interval: number
@@ -14,8 +15,12 @@ export type Rating = 1 | 2 | 3 | 4  // 再学 | 有难度 | 记住了 | 太简�
 const STORAGE_KEY = 'bible_srs'
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  const offset = d.getTimezoneOffset()
+  const localDate = new Date(d.getTime() - (offset * 60 * 1000))
+  return localDate.toISOString().slice(0, 10)
 }
+
 
 function addDays(date: string, days: number): string {
   const d = new Date(date)
@@ -123,9 +128,17 @@ export function getDueIds(allIds: number[]): number[] {
   const t = today()
   return allIds.filter(id => {
     const card = state[id]
+    
+    // Exclude future lessons that have not been studied yet
+    const entry = SCHEDULE.find(e => e.lessonId === id)
+    if (entry && entry.date > t && !card) {
+      return false
+    }
+
     return !card || card.dueDate <= t
   })
 }
+
 
 export function getPassedCount(): number {
   const state = loadState()

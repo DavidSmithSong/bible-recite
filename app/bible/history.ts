@@ -53,7 +53,9 @@ export function getStreak(): number {
   let streak = 0
   const d = new Date()
   while (true) {
-    const key = d.toISOString().slice(0, 10)
+    const offset = d.getTimezoneOffset()
+    const localDate = new Date(d.getTime() - (offset * 60 * 1000))
+    const key = localDate.toISOString().slice(0, 10)
     if (!stats[key] || stats[key].total === 0) break
     streak++
     d.setDate(d.getDate() - 1)
@@ -62,5 +64,9 @@ export function getStreak(): number {
 }
 
 export function todayKey(): string {
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  const offset = d.getTimezoneOffset()
+  const localDate = new Date(d.getTime() - (offset * 60 * 1000))
+  return localDate.toISOString().slice(0, 10)
 }
+
