@@ -1,1 +1,2 @@
-export const APP_VERSION = 'Discipleship0.13.0'
+export const APP_VERSION = 'Discipleship0.13.1'
+

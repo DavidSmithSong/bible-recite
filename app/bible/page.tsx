@@ -36,6 +36,7 @@ export default function BiblePage() {
   const [profile, setProfile] = useState<CloudProfile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [profileError, setProfileError] = useState('')
+  const [weekCardKey, setWeekCardKey] = useState(0)
 
   useEffect(() => {
     const savedTheme = (localStorage.getItem('bible_theme') as Theme | null) ?? 'dark'
@@ -131,19 +132,22 @@ export default function BiblePage() {
   // ── Study card view ───────────────────────────────────────────────────────
   if (selectedVerse) {
     return (
-      <main className="min-h-screen bg-[var(--app-bg)] px-6 py-10">
-        <StudyCard
-          verse={selectedVerse}
-          mode={studyMode}
-          onComplete={handleComplete}
-          onBack={() => setSelectedVerse(null)}
-        />
-        <footer className="mt-12 text-center text-xs text-[var(--subtle-text)] [font-family:'Times_New_Roman',Times,serif]">
+      <main className="min-h-screen flex flex-col bg-[var(--app-bg)] px-6 py-10">
+        <div className="flex-grow">
+          <StudyCard
+            verse={selectedVerse}
+            mode={studyMode}
+            onComplete={handleComplete}
+            onBack={() => setSelectedVerse(null)}
+          />
+        </div>
+        <footer className="mt-12 text-center text-xs text-[var(--subtle-text)] [font-family:'Times_New_Roman',Times,serif] shrink-0">
           {APP_VERSION}
         </footer>
       </main>
     )
   }
+
 
   const weekLessonId = getWeekLessonId()
   const weekEntry = getScheduleEntry(weekLessonId)
@@ -151,8 +155,8 @@ export default function BiblePage() {
 
   if (!profile) {
     return (
-      <main className="min-h-screen bg-[var(--app-bg)] px-6 py-10 text-[var(--app-text)]">
-        <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-lg flex-col justify-center">
+      <main className="min-h-screen flex flex-col bg-[var(--app-bg)] px-6 py-10 text-[var(--app-text)]">
+        <div className="mx-auto flex flex-col justify-center flex-grow max-w-lg w-full">
           <div className="mb-10 text-center">
             <h1 className="text-3xl font-semibold">合神心意的门徒</h1>
             <p className="mt-2 text-xl text-[var(--muted-text)] [font-family:'Times_New_Roman',Times,serif]">Discipleship Essentials</p>
@@ -168,91 +172,104 @@ export default function BiblePage() {
               onSubmit={name => void activateProfile(name)}
             />
           )}
-          <footer className="mt-12 text-center text-xs text-[var(--subtle-text)] [font-family:'Times_New_Roman',Times,serif]">
-            {APP_VERSION}
-          </footer>
         </div>
+        <footer className="mt-12 text-center text-xs text-[var(--subtle-text)] [font-family:'Times_New_Roman',Times,serif] shrink-0">
+          {APP_VERSION}
+        </footer>
       </main>
     )
   }
 
+
   return (
-    <main className="min-h-screen bg-[var(--app-bg)] px-6 py-10 text-[var(--app-text)]">
-      <div className="mx-auto max-w-5xl">
-      <div className="mb-8 grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
-        <div className="sm:col-start-2 text-center">
-          <h1 className="text-3xl font-semibold">合神心意的门徒</h1>
-          <p className="mt-2 text-xl text-[var(--muted-text)] [font-family:'Times_New_Roman',Times,serif]">Discipleship Essentials</p>
+    <main className="min-h-screen flex flex-col bg-[var(--app-bg)] px-6 py-10 text-[var(--app-text)]">
+      <div className="mx-auto max-w-5xl flex-grow w-full">
+        <div className="mb-8 grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
+          <div className="sm:col-start-2 text-center">
+            <h1 className="text-3xl font-semibold">合神心意的门徒</h1>
+            <p className="mt-2 text-xl text-[var(--muted-text)] [font-family:'Times_New_Roman',Times,serif]">Discipleship Essentials</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:col-start-3 sm:justify-end">
+            <span className="text-xs border border-[var(--border)] px-3 py-1.5 rounded-lg bg-[var(--card-bg)] text-[var(--muted-text)] flex items-center gap-1.5 font-sans">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              {profile.name}
+            </span>
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] text-base text-[var(--app-text)] hover:bg-[var(--card-soft)]"
+              aria-label={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}
+              title={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}
+            >
+              {theme === 'dark' ? '☀' : '☾'}
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:col-start-3 sm:justify-end">
-          <span className="text-xs border border-[var(--border)] px-3 py-1.5 rounded-lg bg-[var(--card-bg)] text-[var(--muted-text)] flex items-center gap-1.5 font-sans">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-            {profile.name}
-          </span>
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] text-base text-[var(--app-text)] hover:bg-[var(--card-soft)]"
-            aria-label={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}
-            title={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}
-          >
-            {theme === 'dark' ? '☀' : '☾'}
-          </button>
-        </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-8 border-b border-[var(--border)]">
-        {([['week', '本周经文'], ['all', '全部经文'], ['stats', '统计']] as [Tab, string][]).map(([t, label]) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium transition-colors relative ${
-              tab === t ? 'text-[var(--app-text)]' : 'text-[var(--muted-text)] hover:text-[var(--app-text)]'
-            }`}
-          >
-            {label}
-            {tab === t && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--app-text)] rounded-t" />}
-          </button>
-        ))}
-      </div>
-
-      {/* 本周经文 */}
-      {tab === 'week' && (
-        <div>
-          {weekEntry && (
-            <p className="text-xs text-stone-400 mb-3">
-              第 {weekLessonId} 课 · 上课日期 {weekEntry.date}
-            </p>
-          )}
-          {weekVerse ? (
-            <VerseRow verse={weekVerse} onStudy={startStudy} isDue={dueIds.includes(weekVerse.id)} hydrated={hydrated} />
-          ) : (
-            <p className="text-[var(--muted-text)] text-sm py-12 text-center">课程尚未开始</p>
-          )}
-        </div>
-      )}
-
-      {/* All verses */}
-      {tab === 'all' && (
-        <div className="space-y-3">
-          {verses.map(verse => (
-            <VerseRow key={verse.id} verse={verse} onStudy={startStudy} isDue={dueIds.includes(verse.id)} hydrated={hydrated} />
+        {/* Tabs */}
+        <div className="flex gap-1 mb-8 border-b border-[var(--border)]">
+          {([['week', '本周经文'], ['all', '全部经文'], ['stats', '统计']] as [Tab, string][]).map(([t, label]) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2 text-sm font-medium transition-colors relative ${
+                tab === t ? 'text-[var(--app-text)]' : 'text-[var(--muted-text)] hover:text-[var(--app-text)]'
+              }`}
+            >
+              {label}
+              {tab === t && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--app-text)] rounded-t" />}
+            </button>
           ))}
         </div>
-      )}
 
-      {/* Stats */}
-      {tab === 'stats' && <Heatmap key={activeUserId} />}
-      <footer className="mt-12 flex items-center justify-center gap-3 text-xs text-[var(--subtle-text)] [font-family:'Times_New_Roman',Times,serif]">
+        {/* 本周经文 */}
+        {tab === 'week' && (
+          <div>
+            {weekEntry && (
+              <p className="text-xs text-stone-400 mb-3">
+                第 {weekLessonId} 课 · 上课日期 {weekEntry.date}
+              </p>
+            )}
+            {weekVerse ? (
+              <div className="mt-4">
+                <StudyCard
+                  key={`week-card-${weekVerse.id}-${weekCardKey}`}
+                  verse={weekVerse}
+                  mode="recite"
+                  onComplete={() => {
+                    refreshDue()
+                    setWeekCardKey(prev => prev + 1)
+                  }}
+                />
+              </div>
+            ) : (
+              <p className="text-[var(--muted-text)] text-sm py-12 text-center">课程尚未开始</p>
+            )}
+          </div>
+        )}
+
+        {/* All verses */}
+        {tab === 'all' && (
+          <div className="space-y-3">
+            {verses.map(verse => (
+              <VerseRow key={verse.id} verse={verse} onStudy={startStudy} isDue={dueIds.includes(verse.id)} hydrated={hydrated} />
+            ))}
+          </div>
+        )}
+
+        {/* Stats */}
+        {tab === 'stats' && <Heatmap key={activeUserId} />}
+      </div>
+      <footer className="mt-12 flex items-center justify-center gap-3 text-xs text-[var(--subtle-text)] [font-family:'Times_New_Roman',Times,serif] shrink-0">
         <span>{APP_VERSION}</span>
         <button onClick={switchProfile} className="font-sans hover:text-[var(--app-text)]">
           切换姓名
         </button>
       </footer>
-      </div>
     </main>
   )
 }
+
+
 
 function NameGate({
   loading,

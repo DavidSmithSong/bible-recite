@@ -7,25 +7,50 @@ import { addEntry, todayKey } from './history'
 import { saveCloudCardState, saveCloudHistory } from './cloud'
 import type { BibleVerse } from './page'
 import { LESSON_PAINTINGS } from '@/lib/data/paintings'
+import bibleChaptersData from '@/lib/data/bible_chapters.json'
 
 type Mode = 'recite' | 'reference'
 type Stage = 'idle' | 'inputting' | 'reviewing'
 
-function getContextUrl(reference: string): string {
-  const match = reference.trim().match(/^([\u4e00-\u9fa5a-zA-Z0-9]+)\s+(\d+):/)
-  if (match) {
-    const book = match[1]
-    const chapter = match[2]
-    return `https://bible.fhl.net/new/read.php?chineses=${encodeURIComponent(book)}&chap=${chapter}`
-  }
-  return 'https://bible.fhl.net/new/read.php'
+function BibleChapterContext({ verseId }: { verseId: number }) {
+  const chaptersObj = (bibleChaptersData as any)[verseId]
+  const chapters = chaptersObj?.chapters || []
+
+  if (chapters.length === 0) return null
+
+  return (
+    <div className="mt-6 text-left max-w-2xl mx-auto space-y-4">
+      {chapters.map((ch: any, idx: number) => (
+        <div key={idx} className="space-y-1.5">
+          <p className="text-xs text-[var(--muted-text)] font-semibold font-sans">
+            《{ch.book}》第 {ch.chapter} 章 上下文：
+          </p>
+          <div className="text-justify text-base bg-[var(--card-soft)] border border-[var(--border)] rounded-xl p-5 max-h-[320px] overflow-y-auto [font-family:KaiTi,STKaiti,'Kaiti_SC',serif] leading-loose text-[var(--app-text)] scrollbar-thin">
+            <p className="indent-[2em]">
+              {ch.verses.map((v: any) => (
+                <span
+                  key={v.verseNum}
+                  className={v.isHighlight ? "text-red-500 font-semibold inline" : "inline"}
+                >
+                  <sup className={`text-[10px] mr-0.5 select-none ${v.isHighlight ? 'text-red-400 font-bold' : 'text-stone-400'}`}>
+                    {v.verseNum}
+                  </sup>
+                  {v.text}
+                </span>
+              ))}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 interface Props {
   verse: BibleVerse
   mode: Mode
   onComplete: (correct: boolean, rating: Rating) => void
-  onBack: () => void
+  onBack?: () => void
 }
 
 const RATING_LABELS: { rating: Rating; label: string; color: string }[] = [
@@ -182,9 +207,11 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
     const painting = LESSON_PAINTINGS[verse.id]
     return (
       <div className="mx-auto max-w-4xl">
-        <button onClick={onBack} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
-          ← 返回列表
-        </button>
+        {onBack && (
+          <button onClick={onBack} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
+            ← 返回列表
+          </button>
+        )}
         <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/20 overflow-hidden">
           {/* Painting */}
           {painting && (
@@ -212,25 +239,16 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
 
             {mode === 'recite' ? (
               <>
-                <p className="text-[var(--muted-text)] text-sm mb-1">{verse.reference}</p>
-                <div className="mb-4">
-                  <a
-                    href={getContextUrl(verse.reference)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-[var(--app-text)] transition-colors underline"
-                  >
-                    阅读该章上下文 ↗
-                  </a>
-                </div>
-                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] mx-auto mb-8 max-w-2xl text-left text-lg leading-loose text-[var(--app-text)] space-y-2">
+                <p className="text-[var(--muted-text)] text-sm mb-3">{verse.reference}</p>
+                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] mx-auto mb-6 max-w-2xl text-left text-lg leading-loose text-[var(--app-text)] space-y-2">
                   {verse.text.split('\n').map((line, i) => (
                     <p key={i} className="indent-[2em]">
                       {line}
                     </p>
                   ))}
                 </div>
-                <p className="text-xs text-[var(--muted-text)] mb-6">熟读原文后开始默写（标点可省略）</p>
+                <BibleChapterContext verseId={verse.id} />
+                <p className="text-xs text-[var(--muted-text)] mt-8 mb-6">熟读原文后开始默写（标点可省略）</p>
                 <button
                   onClick={() => setStage('inputting')}
                   className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
@@ -247,17 +265,8 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
                     </p>
                   ))}
                 </div>
-                <div className="mb-4 text-left pl-4">
-                  <a
-                    href={getContextUrl(verse.reference)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-[var(--app-text)] transition-colors underline"
-                  >
-                    阅读该章上下文 ↗
-                  </a>
-                </div>
-                <p className="text-xs text-[var(--muted-text)] mb-4">写出这段经文的出处（书卷 章:节）</p>
+                <BibleChapterContext verseId={verse.id} />
+                <p className="text-xs text-[var(--muted-text)] mt-8 mb-4">写出这段经文的出处（书卷 章:节）</p>
                 <button
                   onClick={() => setStage('inputting')}
                   className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
@@ -271,6 +280,7 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
       </div>
     )
   }
+
 
   // ── INPUTTING — 左图右输入 ───────────────────────────────────────────────
   if (stage === 'inputting') {
