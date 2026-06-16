@@ -12,20 +12,24 @@ import bibleChaptersData from '@/lib/data/bible_chapters.json'
 type Mode = 'recite' | 'reference'
 type Stage = 'idle' | 'inputting' | 'reviewing'
 
-function BibleChapterContext({ verseId }: { verseId: number }) {
+function BibleChapterContext({ verseId, isDrawer = false }: { verseId: number; isDrawer?: boolean }) {
   const chaptersObj = (bibleChaptersData as any)[verseId]
   const chapters = chaptersObj?.chapters || []
 
   if (chapters.length === 0) return null
 
   return (
-    <div className="mt-6 text-left max-w-2xl mx-auto space-y-4">
+    <div className={`text-left space-y-5 ${isDrawer ? '' : 'mt-6 max-w-2xl mx-auto'}`}>
       {chapters.map((ch: any, idx: number) => (
-        <div key={idx} className="space-y-1.5">
+        <div key={idx} className="space-y-2">
           <p className="text-xs text-[var(--muted-text)] font-semibold font-sans">
-            《{ch.book}》第 {ch.chapter} 章 上下文：
+            《{ch.book}》第 {ch.chapter} 章
           </p>
-          <div className="text-justify text-base bg-[var(--card-soft)] border border-[var(--border)] rounded-xl p-5 max-h-[320px] overflow-y-auto [font-family:KaiTi,STKaiti,'Kaiti_SC',serif] leading-loose text-[var(--app-text)] scrollbar-thin">
+          <div className={`text-justify text-base [font-family:KaiTi,STKaiti,'Kaiti_SC',serif] leading-loose text-[var(--app-text)] ${
+            isDrawer 
+              ? 'bg-[var(--card-soft)]/50 border border-[var(--border)]/40 rounded-xl p-5' 
+              : 'bg-[var(--card-soft)] border border-[var(--border)] rounded-xl p-5 max-h-[320px] overflow-y-auto scrollbar-thin'
+          }`}>
             <p className="indent-[2em]">
               {ch.verses.map((v: any) => (
                 <span
@@ -45,6 +49,7 @@ function BibleChapterContext({ verseId }: { verseId: number }) {
     </div>
   )
 }
+
 
 interface Props {
   verse: BibleVerse
@@ -155,6 +160,8 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
   const [diffResult, setDiffResult] = useState<ReturnType<typeof compareText> | null>(null)
   const [refCorrect, setRefCorrect] = useState<boolean | null>(null)
   const [isCorrect, setIsCorrect] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(false)
+
 
   const cardState = getCardState(verse.id)
 
@@ -247,8 +254,13 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
                     </p>
                   ))}
                 </div>
-                <BibleChapterContext verseId={verse.id} />
-                <p className="text-xs text-[var(--muted-text)] mt-8 mb-6">熟读原文后开始默写（标点可省略）</p>
+                <button
+                  onClick={() => setShowSidebar(true)}
+                  className="inline-flex items-center gap-1.5 text-xs text-stone-400 border border-[var(--border)] px-3 py-1.5 rounded-lg hover:bg-[var(--card-soft)] transition-colors mb-6 cursor-pointer"
+                >
+                  📖 查看本章上下文
+                </button>
+                <p className="text-xs text-[var(--muted-text)] mb-6">熟读原文后开始默写（标点可省略）</p>
                 <button
                   onClick={() => setStage('inputting')}
                   className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
@@ -265,8 +277,13 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
                     </p>
                   ))}
                 </div>
-                <BibleChapterContext verseId={verse.id} />
-                <p className="text-xs text-[var(--muted-text)] mt-8 mb-4">写出这段经文的出处（书卷 章:节）</p>
+                <button
+                  onClick={() => setShowSidebar(true)}
+                  className="inline-flex items-center gap-1.5 text-xs text-stone-400 border border-[var(--border)] px-3 py-1.5 rounded-lg hover:bg-[var(--card-soft)] transition-colors mb-6 cursor-pointer"
+                >
+                  📖 查看本章上下文
+                </button>
+                <p className="text-xs text-[var(--muted-text)] mb-4">写出这段经文的出处（书卷 章:节）</p>
                 <button
                   onClick={() => setStage('inputting')}
                   className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
@@ -277,9 +294,34 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
             )}
           </div>
         </div>
+
+        {/* Sidebar Drawer */}
+        <div className={`fixed inset-0 z-50 flex justify-end transition-all duration-300 ${showSidebar ? 'visible' : 'invisible'}`}>
+          <div 
+            className={`absolute inset-0 bg-black/45 backdrop-blur-sm transition-opacity duration-300 ${showSidebar ? 'opacity-100' : 'opacity-0'}`} 
+            onClick={() => setShowSidebar(false)} 
+          />
+          <div className={`relative w-full max-w-lg bg-[var(--card-bg)] border-l border-[var(--border)] h-full p-8 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${showSidebar ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-[var(--border)] shrink-0">
+              <h3 className="text-lg font-bold text-[var(--app-text)]">整章上下文</h3>
+              <button
+                onClick={() => setShowSidebar(false)}
+                className="text-stone-400 hover:text-[var(--app-text)] text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--card-soft)] transition-colors cursor-pointer"
+                aria-label="关闭"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto pr-1">
+              <BibleChapterContext verseId={verse.id} isDrawer={true} />
+            </div>
+          </div>
+        </div>
+
       </div>
     )
   }
+
 
 
   // ── INPUTTING — 左图右输入 ───────────────────────────────────────────────
