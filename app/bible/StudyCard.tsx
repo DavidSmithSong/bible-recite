@@ -11,6 +11,16 @@ import { LESSON_PAINTINGS } from '@/lib/data/paintings'
 type Mode = 'recite' | 'reference'
 type Stage = 'idle' | 'inputting' | 'reviewing'
 
+function getContextUrl(reference: string): string {
+  const match = reference.trim().match(/^([\u4e00-\u9fa5a-zA-Z0-9]+)\s+(\d+):/)
+  if (match) {
+    const book = match[1]
+    const chapter = match[2]
+    return `https://bible.fhl.net/new/read.php?chineses=${encodeURIComponent(book)}&chap=${chapter}`
+  }
+  return 'https://bible.fhl.net/new/read.php'
+}
+
 interface Props {
   verse: BibleVerse
   mode: Mode
@@ -202,7 +212,17 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
 
             {mode === 'recite' ? (
               <>
-                <p className="text-[var(--muted-text)] text-sm mb-3">{verse.reference}</p>
+                <p className="text-[var(--muted-text)] text-sm mb-1">{verse.reference}</p>
+                <div className="mb-4">
+                  <a
+                    href={getContextUrl(verse.reference)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-[var(--app-text)] transition-colors underline"
+                  >
+                    阅读该章上下文 ↗
+                  </a>
+                </div>
                 <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] mx-auto mb-8 max-w-2xl text-left text-lg leading-loose text-[var(--app-text)] space-y-2">
                   {verse.text.split('\n').map((line, i) => (
                     <p key={i} className="indent-[2em]">
@@ -226,6 +246,16 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
                       {line}
                     </p>
                   ))}
+                </div>
+                <div className="mb-4 text-left pl-4">
+                  <a
+                    href={getContextUrl(verse.reference)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-[var(--app-text)] transition-colors underline"
+                  >
+                    阅读该章上下文 ↗
+                  </a>
                 </div>
                 <p className="text-xs text-[var(--muted-text)] mb-4">写出这段经文的出处（书卷 章:节）</p>
                 <button

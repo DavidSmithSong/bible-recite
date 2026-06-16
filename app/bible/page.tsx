@@ -184,7 +184,11 @@ export default function BiblePage() {
           <h1 className="text-3xl font-semibold">合神心意的门徒</h1>
           <p className="mt-2 text-xl text-[var(--muted-text)] [font-family:'Times_New_Roman',Times,serif]">Discipleship Essentials</p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:col-start-3 sm:justify-end">
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:col-start-3 sm:justify-end">
+          <span className="text-xs border border-[var(--border)] px-3 py-1.5 rounded-lg bg-[var(--card-bg)] text-[var(--muted-text)] flex items-center gap-1.5 font-sans">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+            {profile.name}
+          </span>
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] text-base text-[var(--app-text)] hover:bg-[var(--card-soft)]"
@@ -326,7 +330,10 @@ function VerseRow({
   const painting = LESSON_PAINTINGS[verse.id]
 
   return (
-    <div className="bg-[var(--card-bg)] rounded-xl border border-[var(--border)] p-5 flex items-center gap-5 transition-colors hover:opacity-90">
+    <div
+      onClick={() => onStudy(verse, 'recite')}
+      className="bg-[var(--card-bg)] rounded-xl border border-[var(--border)] p-5 flex items-center gap-5 transition-colors hover:opacity-90 cursor-pointer hover:border-[var(--muted-text)]/30"
+    >
       {/* Painting thumbnail */}
       {painting && (
         <div className="shrink-0 w-24 h-16 rounded-md overflow-hidden bg-[var(--card-soft)]">

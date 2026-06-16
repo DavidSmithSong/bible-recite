@@ -1,6 +1,5 @@
-// Strip punctuation and whitespace, keep Chinese chars and digits/letters
 export function normalize(text: string): string {
-  return text.replace(/[\s\p{P}「」『』【】《》〈〉・～—…、·""''：；，。！？\n]/gu, '')
+  return text.replace(/[\s\n]/g, '')
 }
 
 // Split original text into sentences by sentence-ending punctuation
@@ -120,25 +119,25 @@ export function compareText(userInput: string, originalText: string): DiffResult
     const annotated: SentenceResult['annotated'] = []
 
     for (const ch of sent) {
-      const isPunct = normalize(ch) === ''
+      const isPunct = /[\p{P}「」『』【】《》〈〉・～—…、·""''：；，。！？]/u.test(ch)
       // Flush any 'extra' chars from user that appear before this position
       while (diffIdx < fullDiff.length && fullDiff[diffIdx].type === 'extra') {
         annotated.push(fullDiff[diffIdx++])
       }
-      if (isPunct) {
-        annotated.push({ char: ch, type: 'punct' })
+      
+      // Directly consume the fullDiff item (which now includes punctuation)
+      if (diffIdx < fullDiff.length) {
+        const d = fullDiff[diffIdx++]
+        annotated.push({ char: ch, type: d.type as 'ok' | 'missing' })
       } else {
-        // Consume the 'ok' or 'missing' item for this original char
-        if (diffIdx < fullDiff.length) {
-          const d = fullDiff[diffIdx++]
-          annotated.push({ char: ch, type: d.type as 'ok' | 'missing' })
-        } else {
-          annotated.push({ char: ch, type: 'missing' })
-        }
+        annotated.push({ char: ch, type: 'missing' })
       }
     }
 
-    const isCorrect = annotated.every(a => a.type === 'ok' || a.type === 'punct')
+    const isCorrect = annotated.every(a => {
+      const isCharPunct = /[\p{P}「」『』【】《》〈〉・～—…、·""''：；，。！？]/u.test(a.char)
+      return a.type === 'ok' || isCharPunct
+    })
     return { original: sent, isCorrect, annotated }
   })
 
