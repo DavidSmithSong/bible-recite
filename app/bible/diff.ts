@@ -1,4 +1,11 @@
-export function normalize(text: string): string {
+export function normalize(text: string, lang: 'zh' | 'en' = 'zh'): string {
+  if (lang === 'en') {
+    return text
+      .toLowerCase()
+      .replace(/[\p{P}「」『』【】《》〈〉・～—…、·""''：；，。！？]/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
   return text.replace(/[\s\n]/g, '')
 }
 
@@ -106,13 +113,24 @@ function alignDiff(diff: DiffChar[]): AlignedChar[] {
   return aligned
 }
 
-export function compareText(userInput: string, originalText: string): DiffResult {
-  const sentences = splitSentences(originalText)
-  const normInput = normalize(userInput)
-  const normOriginal = normalize(originalText)
-
-  // Diff entire texts at once — avoids per-sentence misalignment when chars are omitted
+export function compareText(userInput: string, originalText: string, lang: 'zh' | 'en' = 'zh'): DiffResult {
+  const normInput = normalize(userInput, lang)
+  const normOriginal = normalize(originalText, lang)
   const fullDiff = diffNormalized(normInput, normOriginal)
+
+  if (lang === 'en') {
+    const isCorrect = fullDiff.every(item => {
+      const isPunct = /[\p{P}「」『』【】《》〈〉・～—…、·""''：；，。！？]/u.test(item.char)
+      return item.type === 'ok' || isPunct
+    })
+    return {
+      sentences: [{ original: originalText, isCorrect, annotated: [] }],
+      allCorrect: isCorrect,
+      aligned: alignDiff(fullDiff),
+    }
+  }
+
+  const sentences = splitSentences(originalText)
   let diffIdx = 0
 
   const sentenceResults: SentenceResult[] = sentences.map(sent => {

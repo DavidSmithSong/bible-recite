@@ -29,8 +29,12 @@ create table if not exists public.history_entries (
   ts timestamptz not null,
   mode text not null check (mode in ('recite', 'reference')),
   correct boolean not null,
-  missed_count integer not null default 0
+  missed_count integer not null default 0,
+  mistakes jsonb not null default '[]'::jsonb
 );
+
+alter table public.history_entries
+  add column if not exists mistakes jsonb not null default '[]'::jsonb;
 
 create index if not exists card_states_profile_id_idx on public.card_states (profile_id);
 create index if not exists history_entries_profile_ts_idx on public.history_entries (profile_id, ts desc);

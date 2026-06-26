@@ -17,6 +17,8 @@ export interface BibleVerse {
   lesson: string
   reference: string
   text: string
+  referenceEn?: string
+  textEn?: string
   image?: { url: string; title: string; artist: string }
 }
 
@@ -39,8 +41,22 @@ export default function BiblePage() {
   const [weekCardKey, setWeekCardKey] = useState(0)
 
   useEffect(() => {
-    const savedTheme = (localStorage.getItem('bible_theme') as Theme | null) ?? 'dark'
-    setTheme(savedTheme)
+    const savedTheme = localStorage.getItem('bible_theme') as Theme | null
+    let activeListenerCleanup: (() => void) | undefined
+
+    if (savedTheme) {
+      setTheme(savedTheme)
+    } else {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      setTheme(mediaQuery.matches ? 'dark' : 'light')
+      const listener = (e: MediaQueryListEvent) => {
+        if (!localStorage.getItem('bible_theme')) {
+          setTheme(e.matches ? 'dark' : 'light')
+        }
+      }
+      mediaQuery.addEventListener('change', listener)
+      activeListenerCleanup = () => mediaQuery.removeEventListener('change', listener)
+    }
 
     const params = new URLSearchParams(window.location.search)
     const urlName = params.get('user') ?? ''
@@ -51,6 +67,10 @@ export default function BiblePage() {
       void activateProfile(initialName, Boolean(urlName))
     } else {
       setProfileLoading(false)
+    }
+
+    return () => {
+      if (activeListenerCleanup) activeListenerCleanup()
     }
   }, [])
 
@@ -69,7 +89,6 @@ export default function BiblePage() {
       document.head.appendChild(meta)
     }
     meta.setAttribute('content', themeColor)
-    localStorage.setItem('bible_theme', theme)
   }, [theme])
 
   function refreshDue() {
@@ -132,18 +151,14 @@ export default function BiblePage() {
   // ── Study card view ───────────────────────────────────────────────────────
   if (selectedVerse) {
     return (
-      <main className="min-h-screen flex flex-col bg-[var(--app-bg)] px-6 py-10">
-        <div className="flex-grow">
-          <StudyCard
-            verse={selectedVerse}
-            mode={studyMode}
-            onComplete={handleComplete}
-            onBack={() => setSelectedVerse(null)}
-          />
-        </div>
-        <footer className="mt-12 text-center text-xs text-[var(--subtle-text)] [font-family:'Times_New_Roman',Times,serif] shrink-0">
-          {APP_VERSION}
-        </footer>
+      <main className="min-h-screen bg-[var(--app-bg)] px-4 py-4 sm:px-6 sm:py-6">
+        <StudyCard
+          verse={selectedVerse}
+          mode={studyMode}
+          profileName={profile?.name}
+          onComplete={handleComplete}
+          onBack={() => setSelectedVerse(null)}
+        />
       </main>
     )
   }
@@ -195,7 +210,11 @@ export default function BiblePage() {
               {profile.name}
             </span>
             <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => {
+                const nextTheme = theme === 'dark' ? 'light' : 'dark'
+                setTheme(nextTheme)
+                localStorage.setItem('bible_theme', nextTheme)
+              }}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] text-base text-[var(--app-text)] hover:bg-[var(--card-soft)]"
               aria-label={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}
               title={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}

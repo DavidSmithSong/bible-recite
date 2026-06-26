@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { getDailyStats, getStreak } from './history'
+import { getDailyStats, getStreak, getMistakeStats } from './history'
 import { getPassedCount, loadState } from './srs'
 import versesData from '@/lib/data/bible_verses.json'
 
@@ -60,6 +60,7 @@ export default function Heatmap() {
   const stats = useMemo(() => getDailyStats(), [])
   const streak = useMemo(() => getStreak(), [])
   const passedCount = useMemo(() => getPassedCount(), [])
+  const mistakeStats = useMemo(() => getMistakeStats(), [])
   const todayKey = getLocalTodayStr()
   const totalPractice = useMemo(() => Object.values(stats).reduce((s, d) => s + d.total, 0), [stats])
   const todayTotal = stats[todayKey]?.total ?? 0
@@ -161,12 +162,36 @@ export default function Heatmap() {
       )}
 
       {/* Stats cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <StatCard label="今日练习" value={todayTotal} unit="次" />
         <StatCard label="总练习次数" value={totalPractice} unit="次" />
         <StatCard label="已掌握" value={passedCount} unit="课" highlight={passedCount > 0} />
         <StatCard label="连续天数" value={streak} unit="天" highlight={streak >= 3} />
+        <StatCard label="错点记录" value={mistakeStats.total} unit="处" highlight={mistakeStats.total > 0} tone="red" />
       </div>
+
+      {mistakeStats.recent.length > 0 && (
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-medium text-[var(--app-text)]">最近错点</h2>
+            <span className="text-xs text-[var(--subtle-text)]">复习时优先看这些</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {mistakeStats.recent.map((mistake, index) => (
+              <div key={`${mistake.verseId}-${mistake.date}-${index}`} className="rounded-xl border border-red-200 bg-red-50 p-4">
+                <div className="mb-2 flex items-center justify-between gap-2 text-xs text-stone-400">
+                  <span>第 {mistake.verseId} 课</span>
+                  <span>{mistake.date}</span>
+                </div>
+                <p className="text-xs text-stone-400">你常写成</p>
+                <p className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] text-lg leading-relaxed text-red-700">{mistake.input}</p>
+                <p className="mt-2 text-xs text-stone-400">应为</p>
+                <p className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] text-lg leading-relaxed text-[var(--app-text)]">{mistake.expected}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Ebbinghaus memory curve */}
       <EbbinghausDashboard />
@@ -174,10 +199,24 @@ export default function Heatmap() {
   )
 }
 
-function StatCard({ label, value, unit, highlight = false }: { label: string; value: number; unit: string; highlight?: boolean }) {
+function StatCard({
+  label,
+  value,
+  unit,
+  highlight = false,
+  tone = 'green',
+}: {
+  label: string
+  value: number
+  unit: string
+  highlight?: boolean
+  tone?: 'green' | 'red'
+}) {
+  const highlightClass = tone === 'red' ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'
+  const valueClass = tone === 'red' ? 'text-red-700' : 'text-green-700'
   return (
-    <div className={`rounded-2xl border p-4 text-center ${highlight ? 'bg-green-50 border-green-200' : 'bg-[var(--card-bg)] border-[var(--border)]'}`}>
-      <p className={`text-2xl font-semibold ${highlight ? 'text-green-700' : 'text-[var(--app-text)]'}`}>
+    <div className={`rounded-2xl border p-4 text-center ${highlight ? highlightClass : 'bg-[var(--card-bg)] border-[var(--border)]'}`}>
+      <p className={`text-2xl font-semibold ${highlight ? valueClass : 'text-[var(--app-text)]'}`}>
         {value}<span className="text-sm font-normal ml-0.5">{unit}</span>
       </p>
       <p className="text-xs text-stone-400 mt-1">{label}</p>

@@ -1,4 +1,8 @@
-export const APP_VERSION = 'Discipleship0.13.3'
+export const APP_VERSION = 'Discipleship0.13.8'
+
+
+
+
 
 
 

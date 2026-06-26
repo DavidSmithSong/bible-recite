@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { compareText, compareReference, type AlignedChar } from './diff'
 import { applyRating, getCardState, type Rating } from './srs'
-import { addEntry, todayKey } from './history'
+import { addEntry, todayKey, type MistakeCard } from './history'
 import { saveCloudCardState, saveCloudHistory } from './cloud'
 import type { BibleVerse } from './page'
 import { LESSON_PAINTINGS } from '@/lib/data/paintings'
@@ -54,9 +54,11 @@ function BibleChapterContext({ verseId, isDrawer = false }: { verseId: number; i
 interface Props {
   verse: BibleVerse
   mode: Mode
+  profileName?: string
   onComplete: (correct: boolean, rating: Rating) => void
   onBack?: () => void
 }
+
 
 const RATING_LABELS: { rating: Rating; label: string; color: string }[] = [
   { rating: 1, label: '再学', color: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200' },
@@ -65,7 +67,48 @@ const RATING_LABELS: { rating: Rating; label: string; color: string }[] = [
   { rating: 4, label: '太简单', color: 'bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-200' },
 ]
 
-function AlignedReview({ aligned }: { aligned: AlignedChar[] }) {
+function AlignedReview({ aligned, isEnglish = false }: { aligned: AlignedChar[]; isEnglish?: boolean }) {
+  if (isEnglish) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <p className="mb-2 text-xs text-[var(--muted-text)]">你的默写</p>
+          <div className="font-mono rounded-xl bg-[var(--app-bg)] p-4 text-base leading-relaxed whitespace-pre-wrap text-justify break-words">
+            {aligned.map((item, index) => {
+              if (item.type === 'ok') {
+                return <span key={index} className="text-[var(--app-text)]">{item.inputChar}</span>
+              } else if (item.type === 'mismatch' || item.type === 'extra') {
+                return (
+                  <span key={index} className="bg-red-100 text-red-700 px-0.5 rounded">
+                    {item.inputChar || '\u00A0'}
+                  </span>
+                )
+              }
+              return null
+            })}
+          </div>
+        </div>
+        <div>
+          <p className="mb-2 text-xs text-[var(--muted-text)]">正确经文</p>
+          <div className="font-mono rounded-xl bg-[var(--app-bg)] p-4 text-base leading-relaxed whitespace-pre-wrap text-justify break-words">
+            {aligned.map((item, index) => {
+              if (item.type === 'ok') {
+                return <span key={index} className="text-[var(--app-text)]">{item.originalChar}</span>
+              } else if (item.type === 'mismatch' || item.type === 'missing') {
+                return (
+                  <span key={index} className="bg-red-100 text-red-700 px-0.5 rounded">
+                    {item.originalChar || '\u00A0'}
+                  </span>
+                )
+              }
+              return null
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -154,35 +197,96 @@ function ConsecutiveDots({ count, passed }: { count: number; passed: boolean }) 
   )
 }
 
-export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
+function buildMistakeCards(aligned: AlignedChar[]): MistakeCard[] {
+  const cards: MistakeCard[] = []
+  let index = 0
+  const compact = (text: string) => text.length > 18 ? `${text.slice(0, 18)}…` : text
+
+  while (index < aligned.length) {
+    const current = aligned[index]
+    if (current.type === 'ok') {
+      index += 1
+      continue
+    }
+
+    const group: AlignedChar[] = []
+    while (index < aligned.length && aligned[index].type !== 'ok') {
+      group.push(aligned[index])
+      index += 1
+    }
+
+    const input = group.map(item => item.inputChar ?? '').join('')
+    const expected = group.map(item => item.originalChar ?? '').join('')
+    cards.push({
+      input: compact(input) || '漏写',
+      expected: compact(expected) || '多写',
+      type: input && expected ? 'mismatch' : input ? 'extra' : 'missing',
+    })
+  }
+
+  return cards.slice(0, 12)
+}
+
+function MistakeCards({ cards }: { cards: MistakeCard[] }) {
+  if (cards.length === 0) return null
+
+  return (
+    <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+      <p className="mb-3 text-sm font-semibold text-red-700">本次错点</p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {cards.map((card, index) => (
+          <div key={`${card.input}-${card.expected}-${index}`} className="rounded-lg border border-red-200 bg-[var(--card-bg)] p-3 text-left">
+            <p className="text-xs text-stone-400">你写成</p>
+            <p className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] text-lg leading-relaxed text-red-700">{card.input}</p>
+            <p className="mt-2 text-xs text-stone-400">应为</p>
+            <p className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] text-lg leading-relaxed text-[var(--app-text)]">{card.expected}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default function StudyCard({ verse, mode, profileName = '', onComplete, onBack }: Props) {
   const [stage, setStage] = useState<Stage>('idle')
   const [input, setInput] = useState('')
   const [diffResult, setDiffResult] = useState<ReturnType<typeof compareText> | null>(null)
   const [refCorrect, setRefCorrect] = useState<boolean | null>(null)
   const [isCorrect, setIsCorrect] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
-
+  const [mistakeCards, setMistakeCards] = useState<MistakeCard[]>([])
+  const [reciteLanguage, setReciteLanguage] = useState<'zh' | 'en'>('zh')
 
   const cardState = getCardState(verse.id)
 
   function handleCheck() {
     let correct = false
     let missedCount = 0
+    let mistakes: MistakeCard[] = []
 
     if (mode === 'recite') {
-      const result = compareText(input, verse.text)
+      const targetText = reciteLanguage === 'en' ? (verse.textEn ?? '') : verse.text
+      const result = compareText(input, targetText, reciteLanguage)
       setDiffResult(result)
       correct = result.allCorrect
-      missedCount = result.sentences.reduce((acc, s) => {
-        return acc + s.annotated.filter(a => a.type === 'missing').length
-      }, 0)
+      mistakes = result.allCorrect ? [] : buildMistakeCards(result.aligned)
+      if (reciteLanguage === 'en') {
+        missedCount = result.aligned.filter(a => a.type === 'missing').length
+      } else {
+        missedCount = result.sentences.reduce((acc, s) => {
+          return acc + s.annotated.filter(a => a.type === 'missing').length
+        }, 0)
+      }
     } else {
-      correct = compareReference(input, verse.reference)
+      const targetRef = reciteLanguage === 'en' ? (verse.referenceEn ?? '') : verse.reference
+      correct = compareReference(input, targetRef)
       setRefCorrect(correct)
+      mistakes = correct ? [] : [{ input: input.trim() || '空白', expected: targetRef, type: 'mismatch' }]
     }
 
     setIsCorrect(correct)
-    const entry = { verseId: verse.id, date: todayKey(), ts: Date.now(), mode, correct, missedCount }
+    setMistakeCards(mistakes)
+    const entry = { verseId: verse.id, date: todayKey(), ts: Date.now(), mode, correct, missedCount, mistakes }
     addEntry(entry)
     void saveCloudHistory(entry).catch(error => console.error(error))
     setStage('reviewing')
@@ -204,6 +308,8 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
     setDiffResult(null)
     setRefCorrect(null)
     setIsCorrect(false)
+    setMistakeCards([])
+    setReciteLanguage('zh')
   }
 
   const newConsecutive = isCorrect ? Math.min(cardState.consecutiveCorrect + 1, 3) : 0
@@ -213,85 +319,139 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
   if (stage === 'idle') {
     const painting = LESSON_PAINTINGS[verse.id]
     return (
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto flex h-[calc(100vh-2rem)] max-w-4xl flex-col sm:h-[calc(100vh-3rem)]">
         {onBack && (
-          <button onClick={onBack} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
+          <button onClick={onBack} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1 shrink-0">
             ← 返回列表
           </button>
         )}
-        <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/20 overflow-hidden">
-          {/* Painting */}
-          {painting && (
-            <div className="relative w-full h-96 bg-[var(--card-soft)]">
-              <img
-                src={painting.url.replace('/250px-', '/960px-')}
-                alt={painting.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-2 right-3 text-right">
-                <p className="text-white/60 text-xs drop-shadow">{painting.title}</p>
-                <p className="text-white/60 text-xs drop-shadow">{painting.artistZh} · {painting.year}</p>
+        <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] shadow-2xl shadow-black/20 flex flex-col">
+          <div className="flex h-full flex-col min-h-0">
+            {/* Painting */}
+            {painting && (
+              <div className="relative h-56 sm:h-72 md:h-[380px] w-full bg-stone-950 shrink-0 overflow-hidden border-b border-[var(--border)]/40 flex items-center justify-center">
+                <img
+                  src={painting.url.replace('/250px-', '/960px-')}
+                  alt={painting.title}
+                  className="h-full max-w-full object-contain"
+                />
+                <div className="absolute bottom-2 right-3 text-right bg-black/45 px-2 py-0.5 rounded backdrop-blur-xs">
+                  <p className="text-white/95 text-[10px] sm:text-xs font-sans">{painting.title}</p>
+                  <p className="text-white/70 text-[10px] sm:text-xs font-sans">{painting.artistZh} · {painting.year}</p>
+                </div>
               </div>
-            </div>
-          )}
-
-          <div className="p-10 text-center">
-            <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">第 {verse.id} 课</p>
-            <h2 className="text-3xl font-semibold text-[var(--app-text)] mb-4">{verse.lesson}</h2>
-
-            {/* Consecutive progress */}
-            <div className="mb-5 flex justify-center">
-              <ConsecutiveDots count={cardState.consecutiveCorrect} passed={cardState.passed} />
-            </div>
-
-            {mode === 'recite' ? (
-              <>
-                <p className="text-[var(--muted-text)] text-sm mb-3">{verse.reference}</p>
-                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] mx-auto mb-6 max-w-2xl text-left text-lg leading-loose text-[var(--app-text)] space-y-2">
-                  {verse.text.split('\n').map((line, i) => (
-                    <p key={i} className="indent-[2em]">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setShowSidebar(true)}
-                  className="inline-flex items-center gap-1.5 text-xs text-stone-400 border border-[var(--border)] px-3 py-1.5 rounded-lg hover:bg-[var(--card-soft)] transition-colors mb-6 cursor-pointer"
-                >
-                  📖 查看本章上下文
-                </button>
-                <p className="text-xs text-[var(--muted-text)] mb-6">熟读原文后开始默写（标点可省略）</p>
-                <button
-                  onClick={() => setStage('inputting')}
-                  className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
-                >
-                  开始默写
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] my-5 text-[var(--app-text)] leading-loose text-sm border-l-2 border-[var(--border)] pl-4 text-left space-y-2">
-                  {verse.text.split('\n').map((line, i) => (
-                    <p key={i} className="indent-[2em]">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setShowSidebar(true)}
-                  className="inline-flex items-center gap-1.5 text-xs text-stone-400 border border-[var(--border)] px-3 py-1.5 rounded-lg hover:bg-[var(--card-soft)] transition-colors mb-6 cursor-pointer"
-                >
-                  📖 查看本章上下文
-                </button>
-                <p className="text-xs text-[var(--muted-text)] mb-4">写出这段经文的出处（书卷 章:节）</p>
-                <button
-                  onClick={() => setStage('inputting')}
-                  className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90"
-                >
-                  输入出处
-                </button>
-              </>
             )}
+
+            <div className="flex min-h-0 flex-1 flex-col p-5 text-center sm:p-6 md:p-8">
+              <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">第 {verse.id} 课</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-[var(--app-text)] mb-3">{verse.lesson}</h2>
+
+              {/* Consecutive progress */}
+              <div className="mb-4 flex justify-center shrink-0">
+                <ConsecutiveDots count={cardState.consecutiveCorrect} passed={cardState.passed} />
+              </div>
+
+              {mode === 'recite' ? (
+                <>
+                  <p className="text-[var(--muted-text)] text-sm mb-2 shrink-0">{verse.reference}</p>
+                  <div className="mb-4 min-h-0 flex-1 overflow-y-auto rounded-xl bg-[var(--app-bg)] p-4 text-left">
+                    <div className={verse.textEn && profileName === '宋大副' ? "grid gap-4 md:grid-cols-2 md:gap-6" : "max-w-2xl mx-auto"}>
+                      {/* Chinese text */}
+                      <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] text-base leading-loose text-[var(--app-text)] sm:text-lg">
+                        {verse.text.split('\n').map((line, i) => (
+                          <p key={i} className="indent-[2em] whitespace-pre-wrap">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                      {/* English text (ESV) */}
+                      {verse.textEn && profileName === '宋大副' && (
+                        <div className="border-t border-[var(--border)]/30 pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-6 [font-family:Georgia,serif] text-sm leading-relaxed text-[var(--muted-text)] sm:text-base">
+                          <p className="text-[10px] sm:text-xs uppercase tracking-wider text-stone-400 mb-2 font-sans font-medium">ESV Translation ({verse.referenceEn})</p>
+                          <p className="whitespace-pre-line italic">{verse.textEn}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowSidebar(true)}
+                    className="inline-flex items-center justify-center gap-1.5 text-xs text-stone-400 border border-[var(--border)] px-3 py-1.5 rounded-lg hover:bg-[var(--card-soft)] transition-colors mb-4 cursor-pointer shrink-0"
+                  >
+                    📖 查看本章上下文
+                  </button>
+                  <p className="text-xs text-[var(--muted-text)] mb-3 shrink-0">熟读原文后开始默写（标点可省略）</p>
+                  <button
+                    onClick={() => {
+                      setReciteLanguage('zh')
+                      setStage('inputting')
+                    }}
+                    className="w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90 shrink-0 mb-2"
+                  >
+                    开始默写
+                  </button>
+                  {verse.textEn && profileName === '宋大副' && (
+                    <button
+                      onClick={() => {
+                        setReciteLanguage('en')
+                        setStage('inputting')
+                      }}
+                      className="w-full border border-[var(--border)] text-[var(--app-text)] py-3 rounded-xl text-sm font-semibold transition-colors hover:bg-[var(--card-soft)] shrink-0"
+                    >
+                      ESV 英文默写
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="mb-4 min-h-0 flex-1 overflow-y-auto rounded-xl bg-[var(--app-bg)] p-4 text-left border-l-2 border-[var(--border)] pl-4">
+                    <div className={verse.textEn && profileName === '宋大副' ? "grid gap-4 md:grid-cols-2 md:gap-6" : "max-w-2xl mx-auto"}>
+                      {/* Chinese text */}
+                      <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] text-base leading-loose text-[var(--app-text)] sm:text-lg">
+                        {verse.text.split('\n').map((line, i) => (
+                          <p key={i} className="indent-[2em] whitespace-pre-wrap">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                      {/* English text (ESV) */}
+                      {verse.textEn && profileName === '宋大副' && (
+                        <div className="border-t border-[var(--border)]/30 pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-6 [font-family:Georgia,serif] text-sm leading-relaxed text-[var(--muted-text)] sm:text-base">
+                          <p className="text-[10px] sm:text-xs uppercase tracking-wider text-stone-400 mb-2 font-sans font-medium">ESV Translation ({verse.referenceEn})</p>
+                          <p className="whitespace-pre-line italic">{verse.textEn}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowSidebar(true)}
+                    className="inline-flex items-center justify-center gap-1.5 text-xs text-stone-400 border border-[var(--border)] px-3 py-1.5 rounded-lg hover:bg-[var(--card-soft)] transition-colors mb-4 cursor-pointer shrink-0"
+                  >
+                    📖 查看本章上下文
+                  </button>
+                  <p className="text-xs text-[var(--muted-text)] mb-3 shrink-0">写出这段经文的出处（书卷 章:节）</p>
+                  <button
+                    onClick={() => {
+                      setReciteLanguage('zh')
+                      setStage('inputting')
+                    }}
+                    className="mt-auto w-full bg-[var(--button-bg)] text-[var(--button-text)] py-4 rounded-xl text-sm font-semibold transition-colors hover:opacity-90 shrink-0 mb-2"
+                  >
+                    输入出处
+                  </button>
+                  {verse.referenceEn && profileName === '宋大副' && (
+                    <button
+                      onClick={() => {
+                        setReciteLanguage('en')
+                        setStage('inputting')
+                      }}
+                      className="w-full border border-[var(--border)] text-[var(--app-text)] py-3 rounded-xl text-sm font-semibold transition-colors hover:bg-[var(--card-soft)] shrink-0"
+                    >
+                      输入英文出处 (ESV)
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -327,13 +487,13 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
   // ── INPUTTING — 左图右输入 ───────────────────────────────────────────────
   if (stage === 'inputting') {
     return (
-      <div className="mx-auto max-w-6xl">
-        <button onClick={() => setStage('idle')} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
+      <div className="mx-auto flex h-[calc(100vh-2rem)] max-w-4xl flex-col sm:h-[calc(100vh-3rem)]">
+        <button onClick={() => setStage('idle')} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1 shrink-0">
           ← 返回
         </button>
-        <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/20 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] shadow-2xl shadow-black/20 flex flex-col">
           {/* Painting */}
-          <div className="relative bg-[var(--card-soft)] h-[360px]">
+          <div className="relative bg-stone-950 h-56 sm:h-72 md:h-[380px] shrink-0 overflow-hidden border-b border-[var(--border)]/40 flex items-center justify-center">
             <PaintingImage verse={verse} />
             {/* Lesson label overlay */}
             <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/50 to-transparent px-4 py-3">
@@ -343,33 +503,49 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
           </div>
 
           {/* Input area */}
-          <div className="flex min-h-[420px] flex-col p-8">
+          <div className="flex min-h-0 flex-1 flex-col p-5 sm:p-6 md:p-8">
             {mode === 'recite' ? (
               <>
-                <p className="text-[var(--app-text)] font-medium text-base mb-3">{verse.reference}</p>
-                <p className="mb-4 text-xs text-[var(--muted-text)]">默写经文，提交后逐字对照</p>
+                <p className="text-[var(--app-text)] font-medium text-base mb-3">
+                  {reciteLanguage === 'en' ? (verse.referenceEn ?? '') : verse.reference}
+                </p>
+                <p className="mb-4 text-xs text-[var(--muted-text)]">
+                  {reciteLanguage === 'en' ? '默写英文 (ESV) 经文，提交后逐字对照' : '默写经文，提交后逐字对照'}
+                </p>
                 <textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  placeholder="在此默写经文，标点可省略，遗漏一字算错…"
-                  className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] flex-1 w-full border border-[var(--border)] bg-[var(--app-bg)] text-[var(--app-text)] rounded-xl p-5 text-base leading-loose outline-none focus:border-[var(--muted-text)] resize-none placeholder:text-[var(--subtle-text)]"
+                  placeholder={reciteLanguage === 'en' ? 'Type the ESV English verse here, punctuation is optional...' : '在此默写经文，标点可省略，遗漏一字算错…'}
+                  className={`${
+                    reciteLanguage === 'en'
+                      ? 'font-mono text-base leading-relaxed'
+                      : '[font-family:KaiTi,STKaiti,\'Kaiti_SC\',serif] text-xl leading-loose'
+                  } flex-1 w-full border border-[var(--border)] bg-[var(--app-bg)] text-[var(--app-text)] rounded-xl p-5 outline-none focus:border-[var(--muted-text)] resize-none placeholder:text-[var(--subtle-text)]`}
                   autoFocus
                 />
               </>
             ) : (
               <>
-                <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] flex-1 text-[var(--app-text)] text-base leading-loose border-l-2 border-[var(--border)] pl-4 mb-4 overflow-y-auto space-y-2">
-                  {verse.text.split('\n').map((line, i) => (
-                    <p key={i} className="indent-[2em]">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-                <p className="text-xs text-[var(--muted-text)] mb-2">写出这段经文的出处（书卷 章:节）</p>
+                {reciteLanguage === 'en' ? (
+                  <div className="font-mono flex-1 text-[var(--app-text)] text-sm leading-relaxed border-l-2 border-[var(--border)] pl-4 mb-4 overflow-y-auto whitespace-pre-line italic">
+                    {verse.textEn}
+                  </div>
+                ) : (
+                  <div className="[font-family:KaiTi,STKaiti,'Kaiti_SC',serif] flex-1 text-[var(--app-text)] text-base leading-loose border-l-2 border-[var(--border)] pl-4 mb-4 overflow-y-auto space-y-2">
+                    {verse.text.split('\n').map((line, i) => (
+                      <p key={i} className="indent-[2em]">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-[var(--muted-text)] mb-2">
+                  {reciteLanguage === 'en' ? '写出这段经文的出处（书卷 章:节，英文）' : '写出这段经文的出处（书卷 章:节）'}
+                </p>
                 <input
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  placeholder="如：马太福音 28:18-20"
+                  placeholder={reciteLanguage === 'en' ? 'e.g., Matthew 28:18-20' : '如：马太福音 28:18-20'}
                   className="w-full border border-[var(--border)] bg-[var(--app-bg)] text-[var(--app-text)] rounded-xl p-4 text-sm outline-none focus:border-[var(--muted-text)] placeholder:text-[var(--subtle-text)]"
                   autoFocus
                 />
@@ -390,13 +566,13 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
 
   // ── REVIEWING ─────────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-6xl">
-      <button onClick={resetCard} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1">
+    <div className="mx-auto flex h-[calc(100vh-2rem)] max-w-4xl flex-col sm:h-[calc(100vh-3rem)]">
+      <button onClick={resetCard} className="text-[var(--muted-text)] hover:text-[var(--app-text)] text-sm mb-4 flex items-center gap-1 shrink-0">
         ← 再练一次
       </button>
-      <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/20 overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] shadow-2xl shadow-black/20 flex flex-col">
         {/* Painting */}
-        <div className="relative bg-[var(--card-soft)] h-[360px]">
+        <div className="relative bg-stone-950 h-56 sm:h-72 md:h-[380px] shrink-0 overflow-hidden border-b border-[var(--border)]/40 flex items-center justify-center">
           <PaintingImage verse={verse} />
           <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/50 to-transparent px-4 py-3">
             <p className="text-white/70 text-xs">第 {verse.id} 课</p>
@@ -405,7 +581,7 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
         </div>
 
         {/* Results */}
-        <div className="p-8 space-y-5">
+        <div className="flex min-h-0 flex-1 flex-col p-5 sm:p-6 md:p-8 space-y-5 overflow-y-auto">
           <ConsecutiveDots count={newConsecutive} passed={willBePassed} />
 
           {!cardState.passed && willBePassed && (
@@ -423,11 +599,17 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
                 <>
                   <p className="text-red-700 font-medium mb-2">✗ 出处有误</p>
                   <p className="text-stone-500 text-xs">你的回答：<span className="text-red-600 line-through">{input}</span></p>
-                  <p className="text-stone-600 mt-1">正确出处：<span className="font-medium text-green-700">{verse.reference}</span></p>
+                  <p className="text-stone-600 mt-1">
+                    正确出处：<span className="font-medium text-green-700">
+                      {reciteLanguage === 'en' ? (verse.referenceEn ?? '') : verse.reference}
+                    </span>
+                  </p>
                 </>
               )}
             </div>
           )}
+
+          <MistakeCards cards={mistakeCards} />
 
           {mode === 'recite' && diffResult && (
             <div>
@@ -436,7 +618,7 @@ export default function StudyCard({ verse, mode, onComplete, onBack }: Props) {
                   <p className="text-green-700 font-medium text-sm">✓ 全部正确！</p>
                 </div>
               ) : (
-                <AlignedReview aligned={diffResult.aligned} />
+                <AlignedReview aligned={diffResult.aligned} isEnglish={reciteLanguage === 'en'} />
               )}
             </div>
           )}
@@ -480,7 +662,7 @@ function PaintingImage({ verse }: { verse: BibleVerse }) {
           src={image.url}
           alt={image.title ?? verse.lesson}
           onError={() => setFailed(true)}
-          className="w-full h-full object-cover"
+          className="h-full max-w-full object-contain"
         />
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center">
@@ -488,9 +670,9 @@ function PaintingImage({ verse }: { verse: BibleVerse }) {
         </div>
       )}
       {image && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
-          <p className="text-white/90 text-xs font-medium leading-tight">{image.title}</p>
-          <p className="text-white/60 text-xs">{image.artist}</p>
+        <div className="absolute bottom-2 right-3 text-right bg-black/45 px-2 py-0.5 rounded backdrop-blur-xs">
+          <p className="text-white/95 text-[10px] sm:text-xs font-sans">{image.title}</p>
+          <p className="text-white/70 text-[10px] sm:text-xs font-sans">{image.artist}</p>
         </div>
       )}
     </>

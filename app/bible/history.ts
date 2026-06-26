@@ -7,6 +7,13 @@ export interface HistoryEntry {
   mode: 'recite' | 'reference'
   correct: boolean
   missedCount: number // chars missed in recite mode
+  mistakes?: MistakeCard[]
+}
+
+export interface MistakeCard {
+  input: string
+  expected: string
+  type: 'missing' | 'extra' | 'mismatch'
 }
 
 const KEY = 'bible_history'
@@ -68,5 +75,23 @@ export function todayKey(): string {
   const offset = d.getTimezoneOffset()
   const localDate = new Date(d.getTime() - (offset * 60 * 1000))
   return localDate.toISOString().slice(0, 10)
+}
+
+export function getMistakeStats(): { total: number; recent: Array<MistakeCard & { verseId: number; date: string }> } {
+  const recent: Array<MistakeCard & { verseId: number; date: string }> = []
+  let total = 0
+
+  for (const entry of loadHistory()) {
+    const mistakes = entry.mistakes ?? []
+    total += mistakes.length
+    for (const mistake of mistakes) {
+      recent.push({ ...mistake, verseId: entry.verseId, date: entry.date })
+    }
+  }
+
+  return {
+    total,
+    recent: recent.slice(-8).reverse(),
+  }
 }
 

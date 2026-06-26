@@ -26,6 +26,7 @@ interface HistoryRow {
   mode: 'recite' | 'reference'
   correct: boolean
   missed_count: number
+  mistakes?: HistoryEntry['mistakes'] | null
 }
 
 function getConfig() {
@@ -120,6 +121,7 @@ export function historyFromRow(row: HistoryRow): HistoryEntry {
     mode: row.mode,
     correct: row.correct,
     missedCount: row.missed_count,
+    mistakes: row.mistakes ?? [],
   }
 }
 
@@ -129,7 +131,7 @@ export async function loadStudyState(profileId: string) {
       `/card_states?profile_id=eq.${encodeURIComponent(profileId)}&select=verse_id,interval,ease_factor,due_date,repetitions,consecutive_correct,passed`,
     ),
     supabaseFetch<HistoryRow[]>(
-      `/history_entries?profile_id=eq.${encodeURIComponent(profileId)}&select=verse_id,date,ts,mode,correct,missed_count&order=ts.asc&limit=5000`,
+      `/history_entries?profile_id=eq.${encodeURIComponent(profileId)}&select=verse_id,date,ts,mode,correct,missed_count,mistakes&order=ts.asc&limit=5000`,
     ),
   ])
 
@@ -173,6 +175,7 @@ export async function saveHistoryEntry(profileId: string, entry: HistoryEntry): 
       mode: entry.mode,
       correct: entry.correct,
       missed_count: entry.missedCount,
+      mistakes: entry.mistakes ?? [],
     }),
   })
 }
@@ -202,6 +205,7 @@ export async function importStudyState(
     mode: entry.mode,
     correct: entry.correct,
     missed_count: entry.missedCount,
+    mistakes: entry.mistakes ?? [],
   }))
 
   if (cardRows.length > 0) {
